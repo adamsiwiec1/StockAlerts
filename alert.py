@@ -64,12 +64,12 @@ def pull_stock_info(stock):
     webbrowser.open(url)
 
     # Send HTTP Request
-    req = requests.get(url)
+    page = requests.get(url)
 
     # Pull HTTP from the request
-    soup = BeautifulSoup(req.content, 'html.parser')
-    data = soup.find(id='search')
-    print(data())
+    soup = BeautifulSoup(page.content, 'html.parser')
+    data = soup.find(class_="BNeawe iBp4i AP7Wnd")
+    print(data.prettify())
 
     # # Get Price
     # price = data.find("span", class_='IsqQVc NprOob XcVN5d').text()
