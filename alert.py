@@ -22,6 +22,7 @@ recipient = "keyloggerproject4@gmail.com"
 # stocks
 chuck = "chuc"
 azn = "azn"
+# noinspection SpellCheckingInspection
 ogen = "ogen"
 
 
