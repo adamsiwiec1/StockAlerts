@@ -1,4 +1,5 @@
 import email
+import smtplib
 import webbrowser
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -10,63 +11,58 @@ import requests
 from bs4 import BeautifulSoup
 from requests import get
 
-# file path - contained detailed info on stock
-file_path = r"Z:\coding\scripts\StockAlerts\stock_info"
+# file path - contained detailed info on stock - took out for now
 file = r"\info.txt"
+file_path = r"Z:\coding\scripts\StockAlerts\stock_info" + file
 
 # email credentials
-email_address = "keyloggerproject4@gmail.com"
-password = "Keylogger12345!"
-recipient = "keyloggerproject4@gmail.com"
+email_address = "stockalertsystem7@gmail.com"
+password = "Alert12345!"
+recipient = "stockalertsystem7@gmail.com"
 
 # stocks
 chuck = "chuc"
 azn = "azn"
-# noinspection SpellCheckingInspection
 ogen = "ogen"
 
 
-# def send_email(file_path, stock_information, attachment, to_address):
-#
-#
-#
-#     sender = email_address
-#
-#     msg = MIMEMultipart()
-#
-#     msg['From'] = sender
-#
-#     msg['Subject'] = "log"
-#
-#     body = alert.stock_information
-#
-#     msg.attach(MIMEText(body, 'plain'))
-#
-#     file = file_path
-#     attachment = open(attachment, 'rb')
-#
-#     p = MIMEBase('application')
-#
-#     p.set_payload(attachment.read())
-#
-#     encoders.encode_base64(p)
-#
-#     p.add_header('Content-Disposition', "attatchment; filename %s" % file)
-#
-#     msg.attach(p)
+def send_email(stock_info, email):
+
+    from_address = email_address
+
+    sender = email
+
+    msg = MIMEMultipart()
+
+    msg['From'] = sender
+
+    msg['Subject'] = "log"
+
+    body = stock_info
+
+    msg.attach(MIMEText(body, 'plain'))
+
+    s = smtplib.SMTP('smtp.gmail.com', 587)
+
+    s.starttls()
+
+    s.login(from_address, password)
+
+    text = msg.as_string()
+
+    s.sendmail(from_address, recipient, text)
+
+    s.quit()
 
 
 def pull_stock_info(stock):
 
     stock_name = stock
 
-    # Google URL
-    url = f"https://www.google.com/search?&q={stock_name}"
-
     yahoo = f"https://finance.yahoo.com/quote/{stock_name}?p={stock_name}&.tsrc=fin-srch"
 
     # Used to open a tab
-    webbrowser.open(yahoo)
+    # webbrowser.open(yahoo)
 
     # Send HTTP Request
     page = requests.get(yahoo)
@@ -75,9 +71,16 @@ def pull_stock_info(stock):
     soup = BeautifulSoup(page.content, 'html.parser')
     data = soup.find(class_="My(6px) Pos(r) smartphone_Mt(6px)").text
 
-    print(data)
+    return data
 
 
-pull_stock_info(azn)
-pull_stock_info(ogen)
-pull_stock_info(chuck)
+azn_info = pull_stock_info(azn)
+azn_info_formatted = "\nAstraZenica: " + azn_info + "\n\n"
+ogen_info = pull_stock_info(ogen)
+ogen_info_formatted = "\nOragenics: " + ogen_info + "\n\n"
+chuck_info = pull_stock_info(chuck)
+chuck_info_formatted = "\nChuck: " + chuck_info + "\n\n"
+
+send_email(azn_info_formatted, recipient)
+send_email(ogen_info_formatted, recipient)
+send_email(chuck_info_formatted, recipient)
