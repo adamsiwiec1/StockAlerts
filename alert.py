@@ -30,9 +30,10 @@ class Stock:
     name = ""
     acronym = ""
     price = ""
-    int_price = 0.0
+    float_price = 0.0
     floor = 0.0
     ceiling = 0.0
+    stock = [raw, name, acronym, price, float_price, floor, ceiling]
 
     def __init__(self, raw_info, stock_name, stock_ack, stock_price, stock_int_price, stock_floor, stock_ceiling):
         self.raw = raw_info
@@ -42,13 +43,14 @@ class Stock:
         self.int_price = stock_int_price
         self.floor = stock_floor
         self.ceiling = stock_ceiling
+        self.stock = self.stock
 
 
 class StockLibrary:
 
     StockNames = ["Charlie's Holdings Inc", "Oragenics Inc", "AstraZeneca plc"]
     StockAcronyms = ["CHUC", "OGEN", "AZN"]
-    StockFloor = [0.12, 0.85, 51.00]
+    StockFloor = [0.12, 0.85, 40.00]
     StockCeiling = [0.20, 1.00, 45.00]
 
 
@@ -131,22 +133,19 @@ def get_price(raw_info):
                 print("Error")
                 return info_array[0]
 
-
     return price
 
 
-def compare_price(stock, low, high):
+def compare_price(stock_price, low, high):
 
-    data = pull_stock_info(stock)
-    current_price = get_price(data)
+    current_price = float(stock_price)
 
     if current_price < low:
-        send_alert(data, current_price)
         return True
     if current_price > high:
-        send_alert(data, current_price)
         return True
-
+    else:
+        return False
 
 def send_alert(raw_information, stock_price, stock_name):
 
@@ -162,22 +161,21 @@ def search_for_alerts(stock1, stock2, stock3):
     timer = time.localtime()
     while True:
         try:
-            if(int(timer)): # tried to slow down timer lol
-                stockalert1 = compare_price(stock1, stock1.floor, stock1.ceiling)
-                if stockalert1 == True:
-                    print("***Stock 1 has triggered an alert")
-                    send_alert(stock1.raw, stock1.price, stock1.name)
-                stockalert2 = compare_price(stock2.price, stock2.floor, stock2.ceiling)
-                if stockalert2 == True:
-                    print("***Stock 2 has triggered an alert")
-                    send_alert(stock2.raw, stock2.price, stock2.name)
-                stockalert3 = compare_price(stock3.price, stock3.floor, stock3.ceiling)
-                if stockalert3 == True:
-                    print("***Stock 3 has triggered an alert")
-                    send_alert(stock3.raw, stock3.price, stock3.name)
-                else:
-                    search_for_alerts(stock1, stock2, stock3)
-                    continue
+            stockalert1 = compare_price(stock1.float_price, stock1.floor, stock1.ceiling)
+            if stockalert1 == True:
+                print("***Stock 1 has triggered an alert")
+                send_alert(stock1.raw, stock1.price, stock1.name)
+            stockalert2 = stock2.compare_price(stock2.float_price, stock2.floor, stock2.ceiling)
+            if stockalert2 == True:
+                print("***Stock 2 has triggered an alert")
+                send_alert(stock2.raw, stock2.price, stock2.name)
+            stockalert3 = stock3.compare_price(stock3.float_price, stock3.floor, stock3.ceiling)
+            if stockalert3 == True:
+                print("***Stock 3 has triggered an alert")
+                send_alert(stock3.raw, stock3.price, stock3.name)
+            else:
+                print("No alerts were found")
+                continue
         except:
              break
 
@@ -198,12 +196,12 @@ def main(stock1, stock2, stock3):
     obj_Azn.price = get_price(obj_Azn.raw)
 
     # Set/convert to integer price
-    price_stock1 = int(stock1.price[0])
-    stock1.int_price = int(price_stock1)
-    price_stock2 = int(stock2.price[0])
-    stock2.int_price = int(price_stock2)
-    price_stock3 = int(stock3.price[0])
-    stock3.int_price = int(price_stock3)
+    price_stock1 = float(stock1.price[0])
+    stock1.int_price = float(price_stock1)
+    price_stock2 = float(stock2.price[0])
+    stock2.int_price = float(price_stock2)
+    price_stock3 = float(stock3.price[0])
+    stock3.int_price = float(price_stock3)
 
     return stock1, stock2, stock3
 
