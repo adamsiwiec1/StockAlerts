@@ -32,7 +32,9 @@ class Stock:
     price = ""
     float_price = 0.0
     floor = 0.0
+    drop_alert = False
     ceiling = 0.0
+    rise_alert = False
     stock = [raw, name, acronym, price, float_price, floor, ceiling]
 
     def __init__(self, raw_info, stock_name, stock_ack, stock_price, stock_int_price, stock_floor, stock_ceiling):
@@ -53,8 +55,13 @@ class StockLibrary:
     StockFloor = [0.12, 0.85, 40.00]
     StockCeiling = [0.20, 1.00, 45.00]
 
+    def __init__(self):
+        self.obj_Chuck = Stock("", self.StockNames[0], self.StockAcronyms[0], "", 0.0, self.StockFloor[0], self.StockCeiling[0])
+        self.obj_Ogen = Stock("", self.StockNames[1], self.StockAcronyms[1], "", 0.0, self.StockFloor[1], self.StockCeiling[1])
+        self.obj_Azn = Stock("", self.StockNames[2], self.StockAcronyms[2], "", 0.0, self.StockFloor[2], self.StockCeiling[2])
 
-def send_email(stock_info, email):
+
+def send_email(subject, stock_info, email):
 
     from_address = email_address
 
@@ -64,7 +71,7 @@ def send_email(stock_info, email):
 
     msg['From'] = sender
 
-    msg['Subject'] = "log"
+    msg['Subject'] = f"{subject}"
 
     body = stock_info
 
@@ -127,8 +134,8 @@ def get_price(raw_info):
         for period in info_array[0]:
             if period == '.':
                 count = count + 1
-            if count >= 2:
-                price = info_array[0].split('.', 2)[0] + info_array[0].split('.')[1]
+                if count >= 2:
+                    price = info_array[0].split('.', 2)[0] + info_array[0].split('.')[1]
             else:
                 print("Error")
                 return info_array[0]
@@ -147,30 +154,34 @@ def compare_price(stock_price, low, high):
     else:
         return False
 
+
 def send_alert(raw_information, stock_price, stock_name):
 
     # Format Information
     formatted_email = f"\n{stock_name}: \n\n Price: " + stock_price + "Raw:\n\n: " + raw_information + "\n\n"
 
-    send_email(formatted_email, recipient)
+    subject_alert = f"{stock_name} HAS CHANGED"
+
+    send_email(stock_name, formatted_email, recipient)
 
 
 def search_for_alerts(stock1, stock2, stock3):
 
-    # print("Press Enter to start searching for alerts or Esc to exit: ")
-    timer = time.localtime()
+    library = StockLibrary()
+    stockalert1 = compare_price(stock1.float_price, stock1.floor, stock1.ceiling)
+    stockalert2 = compare_price(stock2.float_price, stock2.floor, stock2.ceiling)
+    stockalert3 = compare_price(stock3.float_price, stock3.floor, stock3.ceiling)
+    alerts = [stockalert1, stockalert2, stockalert3]
+
     while True:
         try:
-            stockalert1 = compare_price(stock1.float_price, stock1.floor, stock1.ceiling)
-            if stockalert1 == True:
+            if alerts[0] == True:
                 print("***Stock 1 has triggered an alert")
                 send_alert(stock1.raw, stock1.price, stock1.name)
-            stockalert2 = stock2.compare_price(stock2.float_price, stock2.floor, stock2.ceiling)
-            if stockalert2 == True:
+            if alerts[1] == True:
                 print("***Stock 2 has triggered an alert")
                 send_alert(stock2.raw, stock2.price, stock2.name)
-            stockalert3 = stock3.compare_price(stock3.float_price, stock3.floor, stock3.ceiling)
-            if stockalert3 == True:
+            if alerts[2] == True:
                 print("***Stock 3 has triggered an alert")
                 send_alert(stock3.raw, stock3.price, stock3.name)
             else:
@@ -193,7 +204,7 @@ def main(stock1, stock2, stock3):
     # Parse price from raw info and add to stock object
     stock1.price = get_price(stock1.raw)
     stock2.price = get_price(stock2.raw)
-    obj_Azn.price = get_price(obj_Azn.raw)
+    stock3.price = get_price(stock3.raw)
 
     # Set/convert to integer price
     price_stock1 = float(stock1.price[0])
@@ -209,17 +220,14 @@ def main(stock1, stock2, stock3):
 if __name__ == '__main__':
 
     # Stock library
-    stockLibrary = StockLibrary()
-    obj_Chuck = Stock("", stockLibrary.StockNames[0], stockLibrary.StockAcronyms[0], "", 0.0, stockLibrary.StockFloor[0], stockLibrary.StockCeiling[0])
-    obj_Ogen = Stock("", stockLibrary.StockNames[1], stockLibrary.StockAcronyms[1], "", 0.0, stockLibrary.StockFloor[1], stockLibrary.StockCeiling[1])
-    obj_Azn = Stock("", stockLibrary.StockNames[2], stockLibrary.StockAcronyms[2], "", 0.0, stockLibrary.StockFloor[2], stockLibrary.StockCeiling[2])
+    library = StockLibrary()
 
     while True:
         if keyboard.is_pressed("ENTER"):
             sys.exit(0)
         else:
             t0 = time.perf_counter()
-            [stock1, stock2, stock3] = main(obj_Chuck, obj_Ogen, obj_Azn)
+            [stock1, stock2, stock3] = main(library.obj_Chuck, library.obj_Ogen, library.obj_Azn)
             search_for_alerts(stock1, stock2, stock3)
             t1 = time.perf_counter()
             print("Completion time: ", t1 - t0)
