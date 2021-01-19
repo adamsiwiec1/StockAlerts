@@ -12,6 +12,7 @@ import mime
 import requests
 from bs4 import BeautifulSoup
 from requests import get
+import sys
 
 # file path - contained detailed info on stock - took out for now
 file = r"\info.txt"
@@ -29,34 +30,27 @@ class Stock:
     name = ""
     acronym = ""
     price = ""
-    int_price = int(price)
+    int_price = 0.0
     floor = 0.0
     ceiling = 0.0
 
-    def __init__(self,raw_info, stock_name, stock_ack, stock_price, stock_floor, stock_ceiling):
+    def __init__(self, raw_info, stock_name, stock_ack, stock_price, stock_int_price, stock_floor, stock_ceiling):
         self.raw = raw_info
         self.name = stock_name
         self.acronym = stock_ack
         self.price = stock_price
-        self.floor =  stock_floor
+        self.int_price = stock_int_price
+        self.floor = stock_floor
         self.ceiling = stock_ceiling
 
 
 class StockLibrary:
 
     StockNames = ["Charlie's Holdings Inc", "Oragenics Inc", "AstraZeneca plc"]
-    StockAcronyms = ["CHUC","OGEN","AZN"]
-    StockFloor = [0.12,0.85,51.00]
-    StockCeiling = [0.20,1.00,52.00]
+    StockAcronyms = ["CHUC", "OGEN", "AZN"]
+    StockFloor = [0.12, 0.85, 51.00]
+    StockCeiling = [0.20, 1.00, 52.00]
 
-    StockArray = [StockNames,StockAcronyms,StockFloor,StockCeiling]
-
-
-    def __int__(self):
-        self.StockNames
-        self.StockAcronyms
-        self.StockFloor
-        self.
 
 def send_email(stock_info, email):
 
@@ -87,9 +81,11 @@ def send_email(stock_info, email):
     s.quit()
 
 
-def pull_stock_info(stock):
+def pull_stock_info(stock_acryonym):
 
-    stock_name = stock
+    stock_name = stock_acryonym
+
+    print("Pulling info for" + stock_acryonym)
 
     yahoo = f"https://finance.yahoo.com/quote/{stock_name}?p={stock_name}&.tsrc=fin-srch"
 
@@ -109,8 +105,20 @@ def pull_stock_info(stock):
 def get_price(raw_info):
 
     # Parse out price from raw info
-    info_array = raw_info.rsplit(' ', 5)
-    price = info_array[0].rsplit('+', 1)
+    info_array = raw_info.rsplit(' ', 4)
+    # price = info_array[0].rsplit('+', 1)
+
+    plus = '+'
+    minus = '-'
+    period = "."
+
+    if plus in info_array[0]:
+        price = info_array[0].split('+')[0]
+    if minus in info_array[0]:
+       price = info_array[0].split('-')[0]
+    else:
+        if period in info_array[0]:
+            price = info_array[0].split('.', 2)[0] + info_array[0].split('.')[1]
 
     return price
 
@@ -136,13 +144,39 @@ def send_alert(raw_information, stock_price, stock_name):
     send_email(formatted_email, recipient)
 
 
-if __name__ == '__main__':
+def search_for_alerts(stock1, stock2, stock3):
+
+    # while loop, press enter to start script esc to stop
+    print("Press Enter to start searching for alerts or Esc to exit: ")
+    while True:
+        try:
+            if(keyboard.is_pressed('ENTER')):
+                stockalert1 = compare_price(stock1.price, stock1.floor, stock1.ceiling)
+                if stockalert1 == True:
+                    send_alert(stock1.raw, stock1.price, stock1.name)
+                stockalert2 = compare_price(stock2.price, stock2.floor, stock2.ceiling)
+                if stockalert2 == True:
+                    send_alert(stock2.raw, stock2.price, stock2.name)
+                stockalert3 = compare_price(stock3.price, stock3.floor, stock3.ceiling)
+                if stockalert3 == True:
+                    send_alert(stock3.raw, stock3.price, stock3.name)
+                else:
+                    search_for_alerts(stock1, stock2, stock3)
+                    continue
+            if keyboard.is_pressed('Esc'):
+                print("You pressed 'esc', now exiting the script.")
+                sys.exit(0)
+        except:
+             break
+
+
+def main():
 
     # Stock library
     stockLibrary = StockLibrary()
-    obj_Chuck = Stock(stockLibrary.StockNames[0],stockLibrary.StockAcronyms[0],stockLibrary.StockFloor[0],stockLibrary.StockCeiling[0])
-    obj_Ogen = Stock(stockLibrary.StockNames[1],stockLibrary.StockAcronyms[1],stockLibrary.StockFloor[1],stockLibrary.StockCeiling[1])
-    obj_Azn = Stock(stockLibrary.StockNames[2],stockLibrary.StockAcronyms[2],stockLibrary.StockFloor[2],stockLibrary.StockCeiling[2])
+    obj_Chuck = Stock("", stockLibrary.StockNames[0], stockLibrary.StockAcronyms[0], "", 0.0, stockLibrary.StockFloor[0], stockLibrary.StockCeiling[0])
+    obj_Ogen = Stock("", stockLibrary.StockNames[1], stockLibrary.StockAcronyms[1], "", 0.0, stockLibrary.StockFloor[1], stockLibrary.StockCeiling[1])
+    obj_Azn = Stock("", stockLibrary.StockNames[2], stockLibrary.StockAcronyms[2], "", 0.0, stockLibrary.StockFloor[2], stockLibrary.StockCeiling[2])
 
     # Pull raw Information by acronym & add to stock object
     rawInfo_Chuck = pull_stock_info(obj_Chuck.acronym)
@@ -157,27 +191,22 @@ if __name__ == '__main__':
     obj_Ogen.price = get_price(obj_Ogen.raw)
     obj_Azn.price = get_price(obj_Azn.raw)
 
-    # Escape sequence
-    esc = keyboard.is_pressed('Esc')
+    # Set/convert to integer price
+    price_stock1 = int(obj_Chuck.price[0])
+    obj_Chuck.int_price = int(price_stock1)
+    price_stock2 = int(obj_Ogen.price[0])
+    obj_Ogen.int_price = int(price_stock2)
+    price_stock3 = int(obj_Azn.price[0])
+    obj_Azn.int_price = int(price_stock3)
 
-    # while loop, press enter to start script esc to stop
-    if keyboard.is_pressed('ENTER'):
-        while not esc:
-            stockAlert1 = compare_price(obj_Chuck.price, obj_Chuck.floor, obj_Chuck.ceiling)
-            if stockAlert1 == True:
-                send_alert(obj_Chuck.raw, obj_Chuck.price, obj_Chuck.name)
-            else:
-                continue
-            stockAlert2 = compare_price(obj_Ogen.price, obj_Ogen.floor, obj_Ogen.ceiling)
-            if stockAlert2 == True:
-                send_alert(obj_Chuck.raw, obj_Chuck.price, obj_Chuck.name)
-            else:
-                continue
-            stockAlert3 = compare_price(obj_Chuck.price, obj_Chuck.floor, obj_Chuck.ceiling)
-            if stockAlert3 == True:
-                send_alert(obj_Azn.raw, obj_Azn.price, obj_Azn.name)
-            else:
-                continue
+    return obj_Chuck, obj_Ogen, obj_Azn
+
+if __name__ == '__main__':
+
+    while True:
+        [stock1, stock2, stock3] = main()
+        search_for_alerts(stock1, stock2, stock3)
+
 
 
 
