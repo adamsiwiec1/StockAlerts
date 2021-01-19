@@ -62,23 +62,20 @@ def pull_stock_info(stock):
 
     # Google URL
     url = f"https://www.google.com/search?&q={stock_name}"
-    webbrowser.open(url)
+
+    yahoo = f"https://finance.yahoo.com/quote/{stock_name}?p={stock_name}&.tsrc=fin-srch"
+
+    # Used to open a tab
+    webbrowser.open(yahoo)
 
     # Send HTTP Request
-    page = requests.get(url)
+    page = requests.get(yahoo)
 
     # Pull HTTP from the request
     soup = BeautifulSoup(page.content, 'html.parser')
-    data = soup.find(class_="BNeawe iBp4i AP7Wnd")
-    print(data.prettify())
+    data = soup.find(class_="My(6px) Pos(r) smartphone_Mt(6px)").text
 
-    # # Get Price
-    # price = data.find("span", class_='IsqQVc NprOob XcVN5d').text()
-    # print(price)
-
-    # stock_price = 0;
-    #
-    # if(stock price)
+    print(data)
 
 
 pull_stock_info(azn)
