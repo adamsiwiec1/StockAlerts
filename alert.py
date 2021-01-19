@@ -6,10 +6,10 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
 import time
-
 import keyboard as keyboard
 import mime
 import requests
+import timer as timer
 from bs4 import BeautifulSoup
 from requests import get
 import sys
@@ -49,7 +49,7 @@ class StockLibrary:
     StockNames = ["Charlie's Holdings Inc", "Oragenics Inc", "AstraZeneca plc"]
     StockAcronyms = ["CHUC", "OGEN", "AZN"]
     StockFloor = [0.12, 0.85, 51.00]
-    StockCeiling = [0.20, 1.00, 52.00]
+    StockCeiling = [0.20, 1.00, 45.00]
 
 
 def send_email(stock_info, email):
@@ -83,7 +83,11 @@ def send_email(stock_info, email):
 
 def pull_stock_info(stock_acryonym):
 
-    stock_name = stock_acryonym
+    period = "."
+    if period in stock_acryonym:
+        return "null"
+    else:
+        stock_name = stock_acryonym
 
     print("Pulling info for" + stock_acryonym)
 
@@ -116,9 +120,17 @@ def get_price(raw_info):
         price = info_array[0].split('+')[0]
     if minus in info_array[0]:
        price = info_array[0].split('-')[0]
-    else:
-        if period in info_array[0]:
-            price = info_array[0].split('.', 2)[0] + info_array[0].split('.')[1]
+    else: # needed to format for no change, had to count periods
+        count = 0
+        for period in info_array[0]:
+            if period == '.':
+                count = count + 1
+            if count >= 2:
+                price = info_array[0].split('.', 2)[0] + info_array[0].split('.')[1]
+            else:
+                print("Error")
+                return info_array[0]
+
 
     return price
 
@@ -146,31 +158,57 @@ def send_alert(raw_information, stock_price, stock_name):
 
 def search_for_alerts(stock1, stock2, stock3):
 
-    # while loop, press enter to start script esc to stop
-    print("Press Enter to start searching for alerts or Esc to exit: ")
+    # print("Press Enter to start searching for alerts or Esc to exit: ")
+    timer = time.localtime()
     while True:
         try:
-            if(keyboard.is_pressed('ENTER')):
-                stockalert1 = compare_price(stock1.price, stock1.floor, stock1.ceiling)
+            if(int(timer)): # tried to slow down timer lol
+                stockalert1 = compare_price(stock1, stock1.floor, stock1.ceiling)
                 if stockalert1 == True:
+                    print("***Stock 1 has triggered an alert")
                     send_alert(stock1.raw, stock1.price, stock1.name)
                 stockalert2 = compare_price(stock2.price, stock2.floor, stock2.ceiling)
                 if stockalert2 == True:
+                    print("***Stock 2 has triggered an alert")
                     send_alert(stock2.raw, stock2.price, stock2.name)
                 stockalert3 = compare_price(stock3.price, stock3.floor, stock3.ceiling)
                 if stockalert3 == True:
+                    print("***Stock 3 has triggered an alert")
                     send_alert(stock3.raw, stock3.price, stock3.name)
                 else:
                     search_for_alerts(stock1, stock2, stock3)
                     continue
-            if keyboard.is_pressed('Esc'):
-                print("You pressed 'esc', now exiting the script.")
-                sys.exit(0)
         except:
              break
 
 
-def main():
+def main(stock1, stock2, stock3):
+
+    # Pull raw Information by acronym & add to stock object
+    raw_stock1 = pull_stock_info(stock1.acronym)
+    stock1.raw = raw_stock1
+    raw_stock2 = pull_stock_info(stock2.acronym)
+    stock2.raw = raw_stock2
+    raw_stock3 = pull_stock_info(stock3.acronym)
+    stock3.raw = raw_stock3
+
+    # Parse price from raw info and add to stock object
+    stock1.price = get_price(stock1.raw)
+    stock2.price = get_price(stock2.raw)
+    obj_Azn.price = get_price(obj_Azn.raw)
+
+    # Set/convert to integer price
+    price_stock1 = int(stock1.price[0])
+    stock1.int_price = int(price_stock1)
+    price_stock2 = int(stock2.price[0])
+    stock2.int_price = int(price_stock2)
+    price_stock3 = int(stock3.price[0])
+    stock3.int_price = int(price_stock3)
+
+    return stock1, stock2, stock3
+
+
+if __name__ == '__main__':
 
     # Stock library
     stockLibrary = StockLibrary()
@@ -178,34 +216,16 @@ def main():
     obj_Ogen = Stock("", stockLibrary.StockNames[1], stockLibrary.StockAcronyms[1], "", 0.0, stockLibrary.StockFloor[1], stockLibrary.StockCeiling[1])
     obj_Azn = Stock("", stockLibrary.StockNames[2], stockLibrary.StockAcronyms[2], "", 0.0, stockLibrary.StockFloor[2], stockLibrary.StockCeiling[2])
 
-    # Pull raw Information by acronym & add to stock object
-    rawInfo_Chuck = pull_stock_info(obj_Chuck.acronym)
-    obj_Chuck.raw = rawInfo_Chuck
-    rawInfo_Ogen = pull_stock_info(obj_Ogen.acronym)
-    obj_Ogen.raw = rawInfo_Ogen
-    rawInfo_Azn = pull_stock_info(obj_Azn.acronym)
-    obj_Azn.raw = rawInfo_Azn
-
-    # Parse price from raw info and add to stock object
-    obj_Chuck.price = get_price(obj_Chuck.raw)
-    obj_Ogen.price = get_price(obj_Ogen.raw)
-    obj_Azn.price = get_price(obj_Azn.raw)
-
-    # Set/convert to integer price
-    price_stock1 = int(obj_Chuck.price[0])
-    obj_Chuck.int_price = int(price_stock1)
-    price_stock2 = int(obj_Ogen.price[0])
-    obj_Ogen.int_price = int(price_stock2)
-    price_stock3 = int(obj_Azn.price[0])
-    obj_Azn.int_price = int(price_stock3)
-
-    return obj_Chuck, obj_Ogen, obj_Azn
-
-if __name__ == '__main__':
-
     while True:
-        [stock1, stock2, stock3] = main()
-        search_for_alerts(stock1, stock2, stock3)
+        if keyboard.is_pressed("ENTER"):
+            sys.exit(0)
+        else:
+            t0 = time.perf_counter()
+            [stock1, stock2, stock3] = main(obj_Chuck, obj_Ogen, obj_Azn)
+            search_for_alerts(stock1, stock2, stock3)
+            t1 = time.perf_counter()
+            print("Completion time: ", t1 - t0)
+
 
 
 
