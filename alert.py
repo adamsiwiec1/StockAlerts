@@ -22,7 +22,7 @@ recipient = "stockalertsystem7@gmail.com"
 
 class Stock(object):
 
-    def __init__(self , raw, name, acronym, price, float_price, floor, ceiling):
+    def __init__(self, raw, name, acronym, price, float_price, floor, ceiling):
         self.raw = raw,
         self.name = name
         self.acronym = acronym
@@ -49,7 +49,7 @@ def send_email(subject, stock_info, email):
 
     msg.attach(MIMEText(body, 'plain'))
 
-    s = smtplib.SMTP('smtp.gmail.com', 587)
+    s = smtplib.SMTP('smtp.gmail.com', 1500)
 
     s.starttls()
 
@@ -78,19 +78,19 @@ def pull_stock_info(stock_acryonym):
     return data
 
 
-def get_price(raw_info):
+def get_price(stock_info):
 
     plus = '+'
     minus = '-'
     period = "."
 
-    info_array = raw_info.rsplit(' ', 5)
-    if info_array.__contains__('close:'):
-        info_array = raw_info.rsplit(' ', 5)
-    if info_array.__contains__('open:'):
-        info_array = raw_info.rsplit('', 4)
+    # Account for different format when market is closed or open
+    if 'close' in stock_info:
+        info_array = stock_info.rsplit(' ', 5)
+    if 'open' in stock_info:
+        info_array = stock_info.rsplit(' ', 8)
 
-
+    # Account for different format when stock is up/down
     if plus in info_array[0]:
         price = info_array[0].split('+')[0]
     elif minus in info_array[0]:
