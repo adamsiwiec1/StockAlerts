@@ -162,33 +162,39 @@ def send_alert(raw_information, stock_price, stock_name):
 
     subject_alert = f"{stock_name} HAS CHANGED"
 
-    send_email(stock_name, formatted_email, recipient)
+    send_email(subject_alert, formatted_email, recipient)
 
 
-def search_for_alerts(stock1, stock2, stock3):
+def search_for_alerts(stockArray):
 
-    library = StockLibrary()
-    stockalert1 = compare_price(stock1.float_price, stock1.floor, stock1.ceiling)
-    stockalert2 = compare_price(stock2.float_price, stock2.floor, stock2.ceiling)
-    stockalert3 = compare_price(stock3.float_price, stock3.floor, stock3.ceiling)
+    stockalert1 = compare_price(stockArray[0].float_price, stockArray[0].floor, stockArray[0].ceiling)
+    stockalert2 = compare_price(stockArray[1].float_price, stockArray[1].floor, stockArray[1].ceiling)
+    stockalert3 = compare_price(stockArray[2].float_price, stockArray[2].floor, stockArray[2].ceiling)
     alerts = [stockalert1, stockalert2, stockalert3]
 
-    while True:
+    for alert in alerts:
         try:
+            # for alert in alerts:
+            #     if alert == True:
+            #         print(f"***Stock {stockArray[alert].name} has triggered an alert")
+            #         send_alert(stockArray[alert].raw, stockArray[alert].price, stockArray[alert].name)
+            #         break
             if alerts[0] == True:
                 print("***Stock 1 has triggered an alert")
-                send_alert(stock1.raw, stock1.price, stock1.name)
+                send_alert(stockArray[0].raw, stockArray[0].price, stockArray[0].name)
             if alerts[1] == True:
                 print("***Stock 2 has triggered an alert")
-                send_alert(stock2.raw, stock2.price, stock2.name)
+                send_alert(stockArray[1].raw, stockArray[1].price, stockArray[1].name)
             if alerts[2] == True:
                 print("***Stock 3 has triggered an alert")
-                send_alert(stock3.raw, stock3.price, stock3.name)
+                send_alert(stockArray[2].raw, stockArray[2].price, stockArray[2].name)
             else:
                 print("No alerts were found")
                 continue
+            break
         except:
              break
+
 
 
 def main(stock1, stock2, stock3):
@@ -227,8 +233,9 @@ if __name__ == '__main__':
             sys.exit(0)
         else:
             t0 = time.perf_counter()
-            [stock1, stock2, stock3] = main(library.obj_Chuck, library.obj_Ogen, library.obj_Azn)
-            search_for_alerts(stock1, stock2, stock3)
+            stockArray = []
+            stockArray = main(library.obj_Chuck, library.obj_Ogen, library.obj_Azn)
+            search_for_alerts(stockArray)
             t1 = time.perf_counter()
             print("Completion time: ", t1 - t0)
 
