@@ -1,4 +1,4 @@
-#!Z:\coding\scripts\StockAlerts\venv\Scripts\python.exe
+#!C:\Users\coled\Desktop\python\StockAlerts\venv\Scripts\python.exe
 # EASY-INSTALL-ENTRY-SCRIPT: 'future==0.18.2','console_scripts','pasteurize'
 import re
 import sys

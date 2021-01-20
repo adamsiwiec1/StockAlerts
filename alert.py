@@ -15,9 +15,9 @@ from requests import get
 import sys
 
 # email credentials
-email_address = "stockalertsystem7@gmail.com"
-password = "Alert12345!"
-recipient = "stockalertsystem7@gmail.com"
+email_address = "keyloggerproject4@gmail.com"
+password = "Keylogger12345!"
+recipient = "keyloggerproject4@gmail.com"
 
 
 class Stock(object):
@@ -49,7 +49,7 @@ def send_email(subject, stock_info, email):
 
     msg.attach(MIMEText(body, 'plain'))
 
-    s = smtplib.SMTP('smtp.gmail.com', 1500)
+    s = smtplib.SMTP('smtp.gmail.com', 587)
 
     s.starttls()
 
@@ -165,10 +165,15 @@ def main(stocks):
 
 if __name__ == '__main__':
 
-    stockObjects = [Stock("", "", "", "", 0.0, 0.0, 0.0) for i in range(3)]
+    stockObjects = [Stock("", "", "", "", 0.0, 0.0, 0.0) for i in range(6)]
     stockObjects[0] = Stock("", "Charlie's Holdings Inc", "CHUC", "", 0.00, 0.01, 0.02)
     stockObjects[1] = Stock("", "Oragenics Inc", "OGEN", "", 0.00, 1.10, 1.15)
-    stockObjects[2] = Stock("", "AstraZeneca plc", "AZN", "", 0.00, 52.00, 52.00)
+    stockObjects[2] = Stock("", "AstraZeneca plc", "AZN", "", 0.00, 52.00, 60.00)
+    stockObjects[3] = Stock("", "CloudCommerce", "CLWD" , "", 0.00, 0.081, 0.15)
+    stockObjects[4] = Stock("", "Transport&Logs", "TLSS" , "", 0.00, 0.07, 0.12)
+    stockObjects[5] = Stock("", "Plyzer Tech", "PLYZ" , "", 0.00, 0.0016, 0.0070)
+
+
 
     while True:
         if keyboard.is_pressed("ENTER"):
