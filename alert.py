@@ -17,7 +17,11 @@ import sys
 # email credentials
 email_address = "keyloggerproject4@gmail.com"
 password = "Keylogger12345!"
-recipient = "keyloggerproject4@gmail.com"
+recipient = email_address
+
+# email_address = "stockalertsystem7@gmail.com
+# password = "Stock12345!"
+# recipient = email_address
 
 
 class Stock(object):
@@ -172,8 +176,6 @@ if __name__ == '__main__':
     stockObjects[3] = Stock("", "CloudCommerce", "CLWD" , "", 0.00, 0.081, 0.15)
     stockObjects[4] = Stock("", "Transport&Logs", "TLSS" , "", 0.00, 0.07, 0.12)
     stockObjects[5] = Stock("", "Plyzer Tech", "PLYZ" , "", 0.00, 0.0016, 0.0070)
-
-
 
     while True:
         if keyboard.is_pressed("ENTER"):
