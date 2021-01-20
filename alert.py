@@ -80,17 +80,21 @@ def pull_stock_info(stock_acryonym):
 
 def get_price(raw_info):
 
-    # Parse out price from raw info
-    info_array = raw_info.rsplit(' ', 4)
-
     plus = '+'
     minus = '-'
-    # period = "."
+    period = "."
+
+    info_array = raw_info.rsplit(' ', 5)
+    if info_array.__contains__('close:'):
+        info_array = raw_info.rsplit(' ', 5)
+    if info_array.__contains__('open:'):
+        info_array = raw_info.rsplit('', 4)
+
 
     if plus in info_array[0]:
         price = info_array[0].split('+')[0]
-    if minus in info_array[0]:
-       price = info_array[0].split('-')[0]
+    elif minus in info_array[0]:
+        price = info_array[0].split('-')[0]
     else:
         count = 0
         for period in info_array[0]:
@@ -162,9 +166,9 @@ def main(stocks):
 if __name__ == '__main__':
 
     stockObjects = [Stock("", "", "", "", 0.0, 0.0, 0.0) for i in range(3)]
-    stockObjects[0] = Stock("", "Charlie's Holdings Inc", "CHUC", "", 0.0, 0.0, 0.0)
-    stockObjects[1] = Stock("", "Oragenics Inc", "OGEN", "", 0.0, 0.0, 0.0)
-    stockObjects[2] = Stock("", "AstraZeneca plc", "AZN", "", 0.0, 0.0, 0.0)
+    stockObjects[0] = Stock("", "Charlie's Holdings Inc", "CHUC", "", 0.00, 0.01, 0.02)
+    stockObjects[1] = Stock("", "Oragenics Inc", "OGEN", "", 0.00, 1.10, 1.15)
+    stockObjects[2] = Stock("", "AstraZeneca plc", "AZN", "", 0.00, 52.00, 52.00)
 
     while True:
         if keyboard.is_pressed("ENTER"):
