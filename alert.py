@@ -37,11 +37,9 @@ class Stock(object):
         self.stock = [self.raw, self.name, self.acronym, self.price, self.float_price, self.floor, self.ceiling]
 
 
-def send_email(subject, stock_info, email):
+def send_email(subject, stock_info, email_addr):
 
-    from_address = email_address
-
-    sender = email
+    sender = email_addr
 
     msg = MIMEMultipart()
 
@@ -57,11 +55,11 @@ def send_email(subject, stock_info, email):
 
     s.starttls()
 
-    s.login(from_address, password)
+    s.login(sender, password)
 
     text = msg.as_string()
 
-    s.sendmail(from_address, recipient, text)
+    s.sendmail(sender, recipient, text)
 
     s.quit()
 
@@ -116,9 +114,9 @@ def compare_price(stock_price, low, high):
 
     current_price = float(stock_price)
 
-    if current_price < low:
+    if current_price <= low:
         return True
-    if current_price > high:
+    if current_price >= high:
         return True
     else:
         return False
@@ -172,7 +170,7 @@ if __name__ == '__main__':
     stockObjects = [Stock("", "", "", "", 0.0, 0.0, 0.0) for i in range(6)]
     stockObjects[0] = Stock("", "Charlie's Holdings Inc", "CHUC", "", 0.00, 0.01, 0.02)
     stockObjects[1] = Stock("", "Oragenics Inc", "OGEN", "", 0.00, 1.10, 1.15)
-    stockObjects[2] = Stock("", "AstraZeneca plc", "AZN", "", 0.00, 52.00, 60.00)
+    stockObjects[2] = Stock("", "AstraZeneca plc", "AZN", "", 0.00, 52.00, 52.23)
     stockObjects[3] = Stock("", "CloudCommerce", "CLWD" , "", 0.00, 0.081, 0.15)
     stockObjects[4] = Stock("", "Transport&Logs", "TLSS" , "", 0.00, 0.07, 0.12)
     stockObjects[5] = Stock("", "Plyzer Tech", "PLYZ" , "", 0.00, 0.0016, 0.0070)
