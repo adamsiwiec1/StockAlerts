@@ -68,7 +68,13 @@ class Stock(object):
         self.stock = [self.raw, self.name, self.acronym, self.price, self.float_price, self.floor, self.ceiling]
 
 
-def send_email(subject, stock_info, email_addr, recipients):
+class User(object):
+
+    def __int__(self, email):
+        self.email = email
+
+
+def send_email(subject, stock_info, email_addr, recipient):
 
     sender = email_addr
 
@@ -90,7 +96,7 @@ def send_email(subject, stock_info, email_addr, recipients):
 
     text = msg.as_string()
 
-    s.sendmail(sender, recipients, text)
+    s.sendmail(sender, recipient, text)
 
     s.quit()
 
@@ -130,8 +136,8 @@ def pull_stock_info(stock_acryonym):
     soup = BeautifulSoup(page.content, 'html.parser')
     try:
         data = soup.find(class_="My(6px) Pos(r) smartphone_Mt(6px)").text
-    except AttributeError as e:
-        print(e)
+    except AttributeError:
+        print("FAILED TO PULL INFO FOR " + stock_acryonym)
 
     return data
 
@@ -184,7 +190,7 @@ def send_alert(raw_information, stock_price, stock_name):
 
     subject_alert = f"{stock_name} HAS CHANGED"
 
-    send_email(subject_alert, formatted_email, email_address, adam_number)
+    send_email(subject_alert, formatted_email, email_address, User.email)
     # send_text(stock_name + " has changed to " + stock_price, adam_address)
 
 
@@ -231,6 +237,7 @@ if __name__ == '__main__':
           "3. Enter a price floor and ceiling for the stock.\n"
           "4. Press 'n' to add another stock or enter to start searching.\n\n")
     email = raw_input('Enter your email address: ')
+    User.email = email
     # phone = raw_input('Enter phone number or enter to continue without text alerts: ')
     acronyms = []
     nicknames = []
@@ -315,7 +322,7 @@ if __name__ == '__main__':
 
     stockObjects = [Stock("", "", "", "", 0.0, 0.0, 0.0) for i in range(acronymRange)]
     for acronym in range(acronymRange):
-        stockObjects[acronym] = Stock("", f"{nicknames[acronym]}", f"{acronyms[acronym]}", "", 0.00, 0.00, 0.00)
+        stockObjects[acronym] = Stock("", f"{nicknames[acronym]}", f"{acronyms[acronym]}", "", 0.00, floors[acronym], ceilings[acronym])
 
     while True:
         if keyboard.is_pressed("ENTER"):
