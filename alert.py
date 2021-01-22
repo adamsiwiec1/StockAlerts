@@ -252,7 +252,7 @@ if __name__ == '__main__':
         while not floorInput:
             try:
                 floors.append(raw_input(f'Enter Price Floor for {stockIndex+1}: '))
-                if not floors[stockIndex]:
+                if not floors[stockIndex] or not float:
                     raise ValueError("Please enter a Price Floor.")
                 else:
                     floorInput = True
@@ -262,7 +262,7 @@ if __name__ == '__main__':
         while not ceilingInput:
             try:
                 ceilings.append(raw_input(f'Enter Price Ceiling for {stockIndex+1}: '))
-                if not ceilings[stockIndex]:
+                if not ceilings[stockIndex] or not float:
                     raise ValueError("Please enter a Price Ceiling.")
                 else:
                     ceilingInput = True
