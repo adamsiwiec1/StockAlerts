@@ -1,5 +1,5 @@
 # StockAlerts
-Sends email or sms alerts when stock prices fluctuate above/below the user's specified ceiling/floor.
+Sends email or text message alerts when stock prices fluctuate above/below the user's specified ceiling/floor.
 
 Created by Adam Siwiec.
 
