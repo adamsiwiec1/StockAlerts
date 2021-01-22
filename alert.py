@@ -30,11 +30,29 @@ phone_number = 5712911193
 # carriers = {
 #     "vzn": "vtext.com",
 #     "att": "txt.att.net",
-#     "spr:": "sprintpaging.com",
+#     "spr": "sprintpaging.com",
 #     "tmb": "tmomail.net",
 #     "vgn": "vmobl.com"
 # }
 
+stockdict = {
+
+    "AZN:": "AstraZeneca ",
+    "OGEN:": "Oragenics Inc",
+    "CHUC:": "Charlie's Holdings Inc",
+    "CLWD:": "CloudCommerce",
+    "TLSS:": "Transport&Logs",
+    "PLYZ:": "Plyzer Tech"
+}
+
+
+# stockObjects = [Stock("", "", "", "", 0.0, 0.0, 0.0) for i in range(6)]
+# stockObjects[0] = Stock("", "Charlie's Holdings Inc", "CHUC", "", 0.00, 0.01, 0.00)
+# stockObjects[1] = Stock("", "Oragenics Inc", "OGEN", "", 0.00, 1.10, 0.15)
+# stockObjects[2] = Stock("", "AstraZeneca plc", "AZN", "", 0.00, 52.00, 2.23)
+# stockObjects[3] = Stock("", "CloudCommerce", "CLWD" , "", 0.00, 0.081, 0.05)
+# stockObjects[4] = Stock("", "Transport&Logs", "TLSS" , "", 0.00, 0.07, 0.02)
+# stockObjects[5] = Stock("", "Plyzer Tech", "PLYZ" , "", 0.00, 0.0016, 0.0000)
 
 class Stock(object):
 
@@ -232,7 +250,7 @@ if __name__ == '__main__':
         while not acronymInput:
             try:
                 acronyms.append(raw_input(f'Enter Stock Acronym #{stockIndex+1}: '))
-                if not acronyms[stockIndex]:
+                if not acronyms[stockIndex] or len(acronyms[stockIndex]) > 4:
                     raise ValueError("Please enter a valid stock acronym.")
                 else:
                     acronymInput = True
@@ -269,14 +287,21 @@ if __name__ == '__main__':
             except ValueError as e:
                 print(e)
                 del ceilings[stockIndex]
-
-        anothaOne = input("\n\nPress 'Enter' to add another stock or type '-1' then press 'Enter' to start the script:")
-
-        if anothaOne == keyboard.is_pressed('Enter'):
-            continue
-        elif anothaOne == '-1':
-            escape = True
-            break
+        escapeInput = False
+        while not escapeInput:
+            try:
+                print("\nType N and press enter to start the script!")
+                anothaOne = input("\n\nWould you like to add another stock? Y/N:")
+                if anothaOne.lower() == 'y':
+                    escape = False
+                    escapeInput = True
+                if anothaOne.lower() == 'n':
+                    escape = True
+                    escapeInput = True
+                else:
+                    raise ValueError("InputError: (Y/N)")
+            except ValueError as e:
+                print(e)
 
     acronymRange = len(acronyms)
     nicknameRange = len(nicknames)
@@ -286,18 +311,6 @@ if __name__ == '__main__':
     stockObjects = [Stock("", "", "", "", 0.0, 0.0, 0.0) for i in range(acronymRange)]
     for acronym in range(acronymRange):
         stockObjects[acronym] = Stock("", f"{nicknames[acronym]}", f"{acronyms[acronym]}", "", 0.00, 0.01, 0.00)
-
-    # stockObjects = [Stock("", "", "", "", 0.0, 0.0, 0.0) for i in range(6)]
-    # stockObjects[0] = Stock("", "Charlie's Holdings Inc", "CHUC", "", 0.00, 0.01, 0.00)
-    # stockObjects[1] = Stock("", "Oragenics Inc", "OGEN", "", 0.00, 1.10, 0.15)
-    # stockObjects[2] = Stock("", "AstraZeneca plc", "AZN", "", 0.00, 52.00, 2.23)
-    # stockObjects[3] = Stock("", "CloudCommerce", "CLWD" , "", 0.00, 0.081, 0.05)
-    # stockObjects[4] = Stock("", "Transport&Logs", "TLSS" , "", 0.00, 0.07, 0.02)
-    # stockObjects[5] = Stock("", "Plyzer Tech", "PLYZ" , "", 0.00, 0.0016, 0.0000)
-    # Testing notes:
-    # email_address = "stockalertsystem7@gmail.com"
-    # adam_number = "5712911193@txt.att.net"
-    # password = "Alert12345!"
 
     while True:
         if keyboard.is_pressed("ENTER"):
