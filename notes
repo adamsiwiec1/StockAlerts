@@ -1,27 +1,9 @@
-    # for num in count:
-    #     float_price_stock.append()
-    # # Set/convert to integer price
-    # price_stock1 = float(stock1.price[0])
-    # stock1.int_price = float(price_stock1)
-    # price_stock2 = float(stock2.price[0])
-    # stock2.int_price = float(price_stock2)
-    # price_stock3 = float(stock3.price[0])
-    # stock3.int_price = float(price_stock3)
-
-
-        # # Parse price from raw info and add to stock object
-    # stock1.price = get_price(stock1.raw)
-    # stock2.price = get_price(stock2.raw)
-    # stock3.price = get_price(stock3.raw)
-
-
-        # # Pull raw Information by acronym & add to stock object
-    # raw_stock1 = pull_stock_info(stockLibrary[0].acronym)
-    # stockLibrary.raw = raw_stock1
-    # raw_stock2 = pull_stock_info(stockLibrary.acronym)
-    # stockLibrary.raw = raw_stock2
-    # raw_stock3 = pull_stock_info(stockLibrary.acronym)
-    # stockLibrary.raw = raw_stock3
-
-        # float_price_stock = []
-    # Pull raw stock data from library and add to list
+    ascii_letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+    ascii_lowercase = 'abcdefghijklmnopqrstuvwxyz'
+    ascii_uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    digits = '0123456789'
+    hexdigits = '0123456789abcdefABCDEF'
+    octdigits = '01234567'
+    printable = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ \t\n\r\x0b\x0c'
+    punctuation = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+    whitespace = ' \t\n\r\x0b\x0c'
