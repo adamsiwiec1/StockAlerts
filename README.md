@@ -1,7 +1,7 @@
 # StockAlerts
-Sends email alerts when stocks drops below a certain price.
-Created by Adam Siwiec.
-Email: adam2.siwiec@gmail.com
+Sends email alerts when stocks drops below a certain price.\n
+Created by Adam Siwiec.\n
+Email: adam2.siwiec@gmail.com \n
 
 Description:
 **************************************************
