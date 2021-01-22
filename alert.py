@@ -20,12 +20,7 @@ import sys
 email_address = "stockalertsystem7@gmail.com"
 adam_number = "5712911193@txt.att.net"
 password = "Alert12345!"
-recipient = email_address
 phone_number = 5712911193
-
-# email_address = "stockalertsystem7@gmail.com
-# password = "Stock12345!"
-# recipient = email_address
 
 # # cell phone variables
 # carriers = {
@@ -45,15 +40,6 @@ stockdict = {
     "TLSS:": "Transport&Logs",
     "PLYZ:": "Plyzer Tech"
 }
-
-
-# stockObjects = [Stock("", "", "", "", 0.0, 0.0, 0.0) for i in range(6)]
-# stockObjects[0] = Stock("", "Charlie's Holdings Inc", "CHUC", "", 0.00, 0.01, 0.00)
-# stockObjects[1] = Stock("", "Oragenics Inc", "OGEN", "", 0.00, 1.10, 0.15)
-# stockObjects[2] = Stock("", "AstraZeneca plc", "AZN", "", 0.00, 52.00, 2.23)
-# stockObjects[3] = Stock("", "CloudCommerce", "CLWD" , "", 0.00, 0.081, 0.05)
-# stockObjects[4] = Stock("", "Transport&Logs", "TLSS" , "", 0.00, 0.07, 0.02)
-# stockObjects[5] = Stock("", "Plyzer Tech", "PLYZ" , "", 0.00, 0.0016, 0.0000)
 
 class Stock(object):
 
@@ -100,6 +86,7 @@ def send_email(subject, stock_info, email_addr, recipient):
 
     s.quit()
 
+
 # def send_text(message, carrier , phone_number):
 #
 #     msg = MIMEMultipart()
@@ -123,11 +110,11 @@ def send_email(subject, stock_info, email_addr, recipient):
 #     ts.quit()
 
 
-def pull_stock_info(stock_acryonym):
+def pull_stock_info(Stock):
 
-    print("Pulling info for " + stock_acryonym)
+    print("Pulling info for " + Stock.name)
 
-    yahoo = f"https://finance.yahoo.com/quote/{stock_acryonym}?p={stock_acryonym}&.tsrc=fin-srch"
+    yahoo = f"https://finance.yahoo.com/quote/{Stock.acronym}?p={Stock.acronym}&.tsrc=fin-srch"
 
     # Send HTTP Request
     page = requests.get(yahoo)
@@ -136,14 +123,15 @@ def pull_stock_info(stock_acryonym):
     soup = BeautifulSoup(page.content, 'html.parser')
     try:
         data = soup.find(class_="My(6px) Pos(r) smartphone_Mt(6px)").text
-    except AttributeError:
-        print("FAILED TO PULL INFO FOR " + stock_acryonym)
-
-    return data
+        return data
+    except AttributeError as a:
+        print(f"|----!!!!FAILED TO PULL DATA FOR {Stock.acronym}:{Stock.name}!!!!----|\n|---- Attribute Error: {a} ----|\n")
+        del Stock
+        print(f"|----CORRUPT DATA HAS BEEN DELETED----|\n")
 
 
 def get_price(stock_info):
-
+    # Need to add exception handling in this method, there is already some later in in scrape()***********
     plus = '+'
     minus = '-'
     period = "."
@@ -206,16 +194,15 @@ def search_for_alerts(stocks):
             print(f"*****{stocks[num].name} has triggered an alert*****")
             send_alert(stocks[num].raw, stocks[num].price, stocks[num].name)
         else:
-            print("No alerts were found")
+            print(f"No alerts were found for {stocks[num]}")
 
 
-def main(stocks):
+def scrape(stocks):
     count = len(stocks)
     raw_stock = []
     price_stock = []
-
     for num in range(count):
-        raw_stock.append(pull_stock_info(stocks[num].acronym))
+        raw_stock.append(pull_stock_info(stocks[num]))
 
     for num in range(count):
         price_stock.append(get_price(raw_stock[num]))
@@ -223,37 +210,40 @@ def main(stocks):
     for num in range(count):
         stocks[num].raw = raw_stock[num]
         stocks[num].price = price_stock[num]
-        stocks[num].float_price = float(price_stock[num])
-
+        try:
+            if "," in price_stock[num]:
+                price_stock[num] = price_stock[num].replace(',', '')
+            elif price_stock[num]:
+                stocks[num].float_price = float(price_stock[num])
+            else:
+                raise ValueError("|----$$Price Conversion Failure$$----|")
+        except ValueError as e:
+            print(f"Failed to pull {stocks[num].name} ----| Value Error: {e}")
     return stocks
 
 
-if __name__ == '__main__':
-
+def main():
     print("\nHello, welcome to Adam's stock scraper. Instructions below: \n"
-          "1. Enter your email address where you would like to receive alerts.\n"
+          "1. Enter your email address where you would like to receive alerts."
+          "**Important: You must allow less secure apps in your email security "
+          "settings. If this makes you uncomfortable, make a new email address for the alerts. \n"
           # "2. Enter a phone number (optional) for text alerts or press enter to continue without. \n"
           "2. Enter a stock acronym followed by a nickname. \n"
           "3. Enter a price floor and ceiling for the stock.\n"
           "4. Press 'n' to add another stock or enter to start searching.\n\n")
-    email = raw_input('Enter your email address: ')
-    User.email = email
+    emailAddr = raw_input('Enter your email address: ')
+    User.email = emailAddr
     # phone = raw_input('Enter phone number or enter to continue without text alerts: ')
     acronyms = []
     nicknames = []
     floors = []
     ceilings = []
-    allowedCharacters = 'abcdefghijklmnopqrstuvwxyz0123456789!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~'
-    # acronyms.append(raw_input('Enter Stock Acronym #1: '))
-    # nicknames.append(raw_input('Enter Nickname #1: '))
-    # floors.append(float(raw_input(f'Enter Price Floor for Stock #1: ')))
-    # ceilings.append(float(raw_input(f'Enter Price Ceiling for Stock #1: ')))
 
     escape = False
     value = True
     while not escape:
         stockIndex = len(acronyms)
-        print(f"\nStock #{stockIndex+1}:")
+        print(f"\nStock #{stockIndex + 1}:")
         acronymInput = False
         nicknameInput = False
         floorInput = False
@@ -261,7 +251,7 @@ if __name__ == '__main__':
         escapeInput = False
         while not acronymInput:
             try:
-                acronyms.append(raw_input(f'Enter Stock Acronym #{stockIndex+1}: '))
+                acronyms.append(raw_input(f'Enter Stock Acronym #{stockIndex + 1}: '))
                 if not acronyms[stockIndex] or len(acronyms[stockIndex]) > 4:
                     raise ValueError("Please enter a valid stock acronym.")
                 else:
@@ -271,7 +261,7 @@ if __name__ == '__main__':
                 del acronyms[stockIndex]
         while not nicknameInput:
             try:
-                nicknames.append(raw_input(f'Enter Nickname #{stockIndex+1}: '))
+                nicknames.append(raw_input(f'Enter Nickname #{stockIndex + 1}: '))
                 if not nicknames[stockIndex]:
                     raise ValueError("Please enter a Nickname.")
                 else:
@@ -281,7 +271,7 @@ if __name__ == '__main__':
                 del nicknames[stockIndex]
         while not floorInput:
             try:
-                floor = float(raw_input(f'Enter Price Floor for {stockIndex+1}: '))
+                floor = float(raw_input(f'Enter Price Floor for {stockIndex + 1}: '))
                 floors.append(floor)
                 if not floors[stockIndex]:
                     del floors[stockIndex]
@@ -292,22 +282,22 @@ if __name__ == '__main__':
                 print(e)
         while not ceilingInput:
             try:
-                ceilings.append(float(raw_input(f'Enter Price Ceiling for {stockIndex+1}: ')))
+                ceilings.append(float(raw_input(f'Enter Price Ceiling for {stockIndex + 1}: ')))
                 if not ceilings[stockIndex]:
                     del ceilings[stockIndex]
                     raise ValueError("Please enter a valid Price Ceiling.")
-                elif floors[stockIndex] < 1000000:
+                elif floors[stockIndex] < 10000000000000000000000000000000.00:
                     ceilingInput = True
             except ValueError as e:
                 print(e)
         while not escapeInput:
             try:
                 print("\nType N and press enter to start the script!")
-                anothaOne = input("\n\nWould you like to add another stock? Y/N:")
-                if anothaOne.lower() == 'y':
+                anothaOne = input("\n\nWould you like to add another stock? Y/N:").lower()
+                if anothaOne == 'y':
                     escape = False
                     escapeInput = True
-                if anothaOne.lower() == 'n':
+                if anothaOne == 'n':
                     escape = True
                     escapeInput = True
                 else:
@@ -322,17 +312,24 @@ if __name__ == '__main__':
 
     stockObjects = [Stock("", "", "", "", 0.0, 0.0, 0.0) for i in range(acronymRange)]
     for acronym in range(acronymRange):
-        stockObjects[acronym] = Stock("", f"{nicknames[acronym]}", f"{acronyms[acronym]}", "", 0.00, floors[acronym], ceilings[acronym])
+        stockObjects[acronym] = Stock("", f"{nicknames[acronym]}", f"{acronyms[acronym]}", "", 0.00, floors[acronym],
+                                      ceilings[acronym])
 
     while True:
         if keyboard.is_pressed("ENTER"):
             sys.exit(0)
         else:
             t0 = time.perf_counter()
-            stockArray = main(stockObjects)
+            stockArray = scrape(stockObjects)
             search_for_alerts(stockArray)
             t1 = time.perf_counter()
             print("Completion time: ", t1 - t0)
+
+
+if __name__ == '__main__':
+    main()
+
+
 
 
 
