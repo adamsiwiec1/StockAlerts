@@ -8,6 +8,7 @@ from email import encoders
 import time
 import keyboard as keyboard
 import mime
+import null
 import requests
 import timer as timer
 from bs4 import BeautifulSoup
@@ -127,7 +128,10 @@ def pull_stock_info(stock_acryonym):
 
     # Pull HTTP from the request
     soup = BeautifulSoup(page.content, 'html.parser')
-    data = soup.find(class_="My(6px) Pos(r) smartphone_Mt(6px)").text
+    try:
+        data = soup.find(class_="My(6px) Pos(r) smartphone_Mt(6px)").text
+    except AttributeError as e:
+        print(e)
 
     return data
 
@@ -233,20 +237,21 @@ if __name__ == '__main__':
     floors = []
     ceilings = []
     allowedCharacters = 'abcdefghijklmnopqrstuvwxyz0123456789!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~'
-    acronyms.append(raw_input('Enter Stock Acronym #1: '))
-    nicknames.append(raw_input('Enter Nickname #1: '))
-    floors.append(float(raw_input(f'Enter Price Floor for Stock #1: ')))
-    ceilings.append(float(raw_input(f'Enter Price Ceiling for Stock #1: ')))
+    # acronyms.append(raw_input('Enter Stock Acronym #1: '))
+    # nicknames.append(raw_input('Enter Nickname #1: '))
+    # floors.append(float(raw_input(f'Enter Price Floor for Stock #1: ')))
+    # ceilings.append(float(raw_input(f'Enter Price Ceiling for Stock #1: ')))
 
     escape = False
     value = True
     while not escape:
         stockIndex = len(acronyms)
-        print("New stock:\n")
+        print(f"\nStock #{stockIndex+1}:")
         acronymInput = False
         nicknameInput = False
         floorInput = False
         ceilingInput = False
+        escapeInput = False
         while not acronymInput:
             try:
                 acronyms.append(raw_input(f'Enter Stock Acronym #{stockIndex+1}: '))
@@ -269,25 +274,25 @@ if __name__ == '__main__':
                 del nicknames[stockIndex]
         while not floorInput:
             try:
-                floors.append(raw_input(f'Enter Price Floor for {stockIndex+1}: '))
-                if not floors[stockIndex] or not float:
+                floor = float(raw_input(f'Enter Price Floor for {stockIndex+1}: '))
+                floors.append(floor)
+                if not floors[stockIndex]:
+                    del floors[stockIndex]
                     raise ValueError("Please enter a Price Floor.")
-                else:
+                elif floors[stockIndex] > 0.00001:
                     floorInput = True
             except ValueError as e:
                 print(e)
-                del floors[stockIndex]
         while not ceilingInput:
             try:
-                ceilings.append(raw_input(f'Enter Price Ceiling for {stockIndex+1}: '))
-                if not ceilings[stockIndex] or not float:
-                    raise ValueError("Please enter a Price Ceiling.")
-                else:
+                ceilings.append(float(raw_input(f'Enter Price Ceiling for {stockIndex+1}: ')))
+                if not ceilings[stockIndex]:
+                    del ceilings[stockIndex]
+                    raise ValueError("Please enter a valid Price Ceiling.")
+                elif floors[stockIndex] < 1000000:
                     ceilingInput = True
             except ValueError as e:
                 print(e)
-                del ceilings[stockIndex]
-        escapeInput = False
         while not escapeInput:
             try:
                 print("\nType N and press enter to start the script!")
@@ -310,7 +315,7 @@ if __name__ == '__main__':
 
     stockObjects = [Stock("", "", "", "", 0.0, 0.0, 0.0) for i in range(acronymRange)]
     for acronym in range(acronymRange):
-        stockObjects[acronym] = Stock("", f"{nicknames[acronym]}", f"{acronyms[acronym]}", "", 0.00, 0.01, 0.00)
+        stockObjects[acronym] = Stock("", f"{nicknames[acronym]}", f"{acronyms[acronym]}", "", 0.00, 0.00, 0.00)
 
     while True:
         if keyboard.is_pressed("ENTER"):
