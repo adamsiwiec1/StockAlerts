@@ -1,7 +1,10 @@
 # StockAlerts
-Sends email alerts when stocks drops below a certain price.\n
-Created by Adam Siwiec.\n
-Email: adam2.siwiec@gmail.com \n
+Sends email or sms alerts when stock prices fluctuate above/below the user's specified ceiling/floor.
+
+Created by Adam Siwiec.
+
+Email: adam2.siwiec@gmail.com
+
 
 Description:
 **************************************************
