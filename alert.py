@@ -1,19 +1,11 @@
-import email
 import smtplib
-import webbrowser
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email import encoders
 import time
 import keyboard as keyboard
-import mime
-import null
 import requests
-import timer as timer
 from bs4 import BeautifulSoup
 from pip._vendor.distlib.compat import raw_input
-from requests import get
 import sys
 
 # email variables
