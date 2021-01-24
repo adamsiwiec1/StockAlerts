@@ -1,6 +1,6 @@
 # StockAlerts
 Sends email or text message alerts when stock prices fluctuate above/below the user's specified ceiling/floor.
-
+**Implementing Sentinel Dynamic Linked List in StockAlertsLinkedList**
 Created by Adam Siwiec.
 
 Email: adam2.siwiec@gmail.com
