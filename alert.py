@@ -2,39 +2,44 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import time
+
+from termcolor import colored
 import keyboard as keyboard
 import requests
 from bs4 import BeautifulSoup
 from pip._vendor.distlib.compat import raw_input
 import sys
+from linkedList import Sentinel_DLL
+
+# Instance Variables
+stock_dll = Sentinel_DLL() # Instance of a linked list for stock acronyms
 
 # email variables
-email_address = "stockalertsystem7@gmail.com"
+sender = "stockalertsystem7@gmail.com"
 adam_number = "5712911193@txt.att.net"
 password = "Alert12345!"
 phone_number = 5712911193
 
-# # cell phone variables
-# carriers = {
-#     "vzn": "vtext.com",
-#     "att": "txt.att.net",
-#     "spr": "sprintpaging.com",
-#     "tmb": "tmomail.net",
-#     "vgn": "vmobl.com"
-# }
+# cell phone variables
+carriers = {
+    "vzn": "vtext.com",
+    "att": "txt.att.net",
+    "spr": "sprintpaging.com",
+    "tmb": "tmomail.net",
+    "vgn": "vmobl.com"
+}
 
 stockdict = {
 
-    "AZN:": "AstraZeneca ",
-    "OGEN:": "Oragenics Inc",
-    "CHUC:": "Charlie's Holdings Inc",
-    "CLWD:": "CloudCommerce",
-    "TLSS:": "Transport&Logs",
-    "PLYZ:": "Plyzer Tech"
+    "AZN": "AstraZeneca",
+    "OGEN": "Oragenics Inc",
+    "CHUC": "Charlie's Holdings Inc",
+    "CLWD": "CloudCommerce",
+    "TLSS": "Transport&Logs",
+    "PLYZ": "Plyzer Tech"
 }
 
 class Stock(object):
-
     def __init__(self, raw, name, acronym, price, float_price, floor, ceiling):
         self.raw = raw,
         self.name = name
@@ -46,10 +51,19 @@ class Stock(object):
         self.stock = [self.raw, self.name, self.acronym, self.price, self.float_price, self.floor, self.ceiling]
 
 
-class User(object):
+class StockLibrary(object): # this is a linked list consisted of STOCK ACRONYMS
+    def __init__(self):
+        self.stock = Stock
 
+    # def add_stock(self, Stock):
+    #     stock_dll.append(Stock.acronym)
+
+
+class User(object):
     def __int__(self, email):
         self.email = email
+
+    # def user_input(self,email):
 
 
 def send_email(subject, stock_info, email_addr, recipient):
@@ -169,8 +183,10 @@ def send_alert(raw_information, stock_price, stock_name):
     formatted_email = f"\n{stock_name}: \n\n Price: " + stock_price + "Raw:\n\n: " + raw_information + "\n\n"
 
     subject_alert = f"{stock_name} HAS CHANGED"
-
-    send_email(subject_alert, formatted_email, email_address, User.email)
+    try:
+        send_email(subject_alert, formatted_email, sender, User.email)
+    except Exception as e:
+        print(colored(f"There was a fatal error sending your email. Make sure you have it configured correctly. ERROR: {e}", "red"))
     # send_text(stock_name + " has changed to " + stock_price, adam_address)
 
 
@@ -193,26 +209,28 @@ def scrape(stocks):
     count = len(stocks)
     raw_stock = []
     price_stock = []
-    for num in range(count):
-        raw_stock.append(pull_stock_info(stocks[num]))
+    try:
+        for num in range(count):
+            raw_stock.append(pull_stock_info(stocks[num]))
 
-    for num in range(count):
-        price_stock.append(get_price(raw_stock[num]))
+        for num in range(count):
+            price_stock.append(get_price(raw_stock[num]))
 
-    for num in range(count):
-        stocks[num].raw = raw_stock[num]
-        stocks[num].price = price_stock[num]
-        try:
-            if "," in price_stock[num]:
-                price_stock[num] = price_stock[num].replace(',', '')
-            elif price_stock[num]:
-                stocks[num].float_price = float(price_stock[num])
-            else:
-                raise ValueError("|----$$Price Conversion Failure$$----|")
-        except ValueError as e:
-            print(f"Failed to pull {stocks[num].name} ----| Value Error: {e}")
+        for num in range(count):
+            stocks[num].raw = raw_stock[num]
+            stocks[num].price = price_stock[num]
+    except ValueError or TypeError or AttributeError as e:
+        print(colored(f"!!Fatal error retrieving data!! Please input stock acronyms correctly.", "red"))
+    try:
+        if "," in price_stock[num]:
+            price_stock[num] = price_stock[num].replace(',', '')
+        elif price_stock[num]:
+            stocks[num].float_price = float(price_stock[num])
+        else:
+            raise ValueError("|----$$Price Conversion Failure$$----|")
+    except ValueError or TypeError or AttributeError as e:
+        print(f"Failed to pull {stocks[num].name} ----| Error: {e}")
     return stocks
-
 
 def main():
     print("\nHello, welcome to Adam's stock scraper. Instructions below: \n"
@@ -302,10 +320,21 @@ def main():
     floorRange = len(floors)
     ceilingRange = len(ceilings)
 
-    stockObjects = [Stock("", "", "", "", 0.0, 0.0, 0.0) for i in range(acronymRange)]
-    for acronym in range(acronymRange):
-        stockObjects[acronym] = Stock("", f"{nicknames[acronym]}", f"{acronyms[acronym]}", "", 0.00, floors[acronym],
-                                      ceilings[acronym])
+
+
+    # Testing Linked List - pull stocks from dictionary and add to DLL
+    dictionaryLength = len(stockdict)
+    stockObjects = [Stock("", "", "", "", 0.0, 0.0, 0.0)]  # for i in (range(acronymRange + dictionaryLength))
+    for key, value in stockdict.items():
+        stockObjects.append(Stock("", f"{value}", f"{str(key)}", "", 0.00, 0.00, 0.00))
+
+
+
+    for x in range(acronymRange):
+        stockObjects[x] = Stock("", f"{nicknames[x]}", f"{acronyms[x]}", "", 0.00, floors[x],
+                              ceilings[x])
+        # Testing Linked List - Adds Stock Acronyms to List
+        add_to_dll(stockObjects[x])
 
     while True:
         if keyboard.is_pressed("ENTER"):
@@ -316,6 +345,22 @@ def main():
             search_for_alerts(stockArray)
             t1 = time.perf_counter()
             print("Completion time: ", t1 - t0)
+
+# Linked List branch
+
+def add_to_dictionary(stockArray):
+    try:
+        for stock in stockArray:
+            stockdict[stockArray[stock].acronym] = ('Name: ' + str(stockArray[stock].name) + "Price: " + str(stockArray[stock].price))
+    except ValueError or AttributeError as e:
+        print("Error in add to dictionary" + str(e))
+
+
+def add_to_dll(Stock):
+    try:
+        stock_dll.append(str(Stock.acronym))
+    except ValueError or AttributeError as e:
+        print("An error occurred in add_to_dll  |" + str(e))
 
 
 if __name__ == '__main__':
