@@ -14,15 +14,6 @@ adam_number = "5712911193@txt.att.net"
 password = "Alert12345!"
 phone_number = 5712911193
 
-# # cell phone variables
-# carriers = {
-#     "vzn": "vtext.com",
-#     "att": "txt.att.net",
-#     "spr": "sprintpaging.com",
-#     "tmb": "tmomail.net",
-#     "vgn": "vmobl.com"
-# }
-
 stockdict = {
 
     "AZN:": "AstraZeneca ",
@@ -77,29 +68,6 @@ def send_email(subject, stock_info, email_addr, recipient):
     s.sendmail(sender, recipient, text)
 
     s.quit()
-
-
-# def send_text(message, carrier , phone_number):
-#
-#     msg = MIMEMultipart()
-#
-#     msg['From'] = ""
-#
-#     body = "This is a Text Message."
-#
-#     msg.attach(MIMEText(body, 'plain'))
-#
-#     ts = smtplib.SMTP('smtp.gmail.com', 587)
-#
-#     ts.starttls()
-#
-#     ts.login(email_address, password)
-#
-#     text = msg.as_string()
-#
-#     ts.sendmail(email_address, phone_number, text)
-#
-#     ts.quit()
 
 
 def pull_stock_info(Stock):
@@ -171,7 +139,6 @@ def send_alert(raw_information, stock_price, stock_name):
     subject_alert = f"{stock_name} HAS CHANGED"
 
     send_email(subject_alert, formatted_email, email_address, User.email)
-    # send_text(stock_name + " has changed to " + stock_price, adam_address)
 
 
 def search_for_alerts(stocks):
@@ -219,13 +186,11 @@ def main():
           "1. Enter your email address where you would like to receive alerts."
           "**Important: You must allow less secure apps in your email security "
           "settings. If this makes you uncomfortable, make a new email address for the alerts. \n"
-          # "2. Enter a phone number (optional) for text alerts or press enter to continue without. \n"
           "2. Enter a stock acronym followed by a nickname. \n"
           "3. Enter a price floor and ceiling for the stock.\n"
           "4. Press 'n' to add another stock or enter to start searching.\n\n")
     emailAddr = raw_input('Enter your email address: ')
     User.email = emailAddr
-    # phone = raw_input('Enter phone number or enter to continue without text alerts: ')
     acronyms = []
     nicknames = []
     floors = []
