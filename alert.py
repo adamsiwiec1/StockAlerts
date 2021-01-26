@@ -147,8 +147,10 @@ def send_alert(raw_information, stock_price, stock_name):
         formatted_email = f"\n{stock_name}: \n\n Price: " + stock_price + "Raw:\n\n: " + raw_information + "\n\n"
         subject_alert = f"{stock_name} HAS CHANGED"
         send_email(subject_alert, formatted_email, email_address, User.email)
-    except Exception as e:
-        print("We were unable to send an email to the address you provided. Error: (" + str(e))
+    except Exception:
+        print(colored("We were unable to send an email to the address you provided. You may need to allow less\n"
+              "secure applications to access your email. Try again"))
+        user_input()
 
 
 def search_for_alerts(stocks):
