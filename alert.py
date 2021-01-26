@@ -222,8 +222,8 @@ def user_input():
                 if not acronyms[stockIndex]:
                     del acronyms[stockIndex]
                     raise ValueError("Please enter a stock acronym.", "red")
-                if acronyms[stockIndex] not in StockDictionary.NASDAQ:
-                    print("Please enter a NASDAQ stock.")
+                if acronyms[stockIndex] not in StockDictionary.NASDAQ or StockDictionary.COLE:
+                    print("Please enter a NASDAQ or COLE stock.")
                 elif len(acronyms[stockIndex]) > 5:
                     raise ValueError("Enter a valid stock acronym with less than 5 characters.", "red")
                 else:

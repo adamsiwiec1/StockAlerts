@@ -3,6 +3,9 @@
 
 class StockDictionary:
 
+
+    COLE = ["CLWD","CHUC","TLSS","PLYZ"]
+
     NASDAQ = ["A", "AA", "AAA", "AAAU", "AACG", "AACQ", "AACQU", "AACQW", "AADR", "AAIC", "AAL", "AAMC", "AAME", "AAN", "AAOI",
          "AAON", "AAP", "AAPL", "AAT", "AAU", "AAWW", "AAXJ", "AAXN", "AB", "ABB", "ABBV", "ABC", "ABCB", "ABCL", "ABCM",
          "ABEO", "ABEQ", "ABEV", "ABG", "ABIO", "ABM", "ABMD", "ABNB", "ABR", "ABST", "ABT", "ABTX", "ABUS", "AC", "ACA",
