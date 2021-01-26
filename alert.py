@@ -18,10 +18,6 @@ password = "Alert12345!"
 phone_number = 5712911193
 
 
-# CLI Commands (Argparse)
-# args = parser.parse_args()
-
-
 class Stock(object):
 
     def __init__(self, raw, name, acronym, price, float_price, floor, ceiling):
@@ -149,7 +145,7 @@ def send_alert(raw_information, stock_price, stock_name):
         send_email(subject_alert, formatted_email, email_address, User.email)
     except Exception:
         print(colored("We were unable to send an email to the address you provided. You may need to allow less\n"
-              "secure applications to access your email. Try again"))
+              "secure applications to access your email. Try again", "red"))
         user_input()
 
 
@@ -226,8 +222,8 @@ def user_input():
                 if not acronyms[stockIndex]:
                     del acronyms[stockIndex]
                     raise ValueError("Please enter a stock acronym.", "red")
-                # if acronyms[stockIndex] not in StockDictionary.NASDAQ:
-                #     print("Please enter a NASDAQ stock.")
+                if acronyms[stockIndex] not in StockDictionary.NASDAQ:
+                    print("Please enter a NASDAQ stock.")
                 elif len(acronyms[stockIndex]) > 5:
                     raise ValueError("Enter a valid stock acronym with less than 5 characters.", "red")
                 else:
