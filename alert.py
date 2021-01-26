@@ -1,12 +1,15 @@
+import argparse
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from termcolor import colored
 import time
 import keyboard as keyboard
 import requests
 from bs4 import BeautifulSoup
 from pip._vendor.distlib.compat import raw_input
 import sys
+from dictionary import StockDictionary
 
 # email variables
 email_address = "stockalertsystem7@gmail.com"
@@ -14,15 +17,10 @@ adam_number = "5712911193@txt.att.net"
 password = "Alert12345!"
 phone_number = 5712911193
 
-stockdict = {
 
-    "AZN:": "AstraZeneca ",
-    "OGEN:": "Oragenics Inc",
-    "CHUC:": "Charlie's Holdings Inc",
-    "CLWD:": "CloudCommerce",
-    "TLSS:": "Transport&Logs",
-    "PLYZ:": "Plyzer Tech"
-}
+# CLI Commands (Argparse)
+# args = parser.parse_args()
+
 
 class Stock(object):
 
@@ -35,6 +33,7 @@ class Stock(object):
         self.floor = floor
         self.ceiling = ceiling
         self.stock = [self.raw, self.name, self.acronym, self.price, self.float_price, self.floor, self.ceiling]
+    # def add_stock(self, Stock):
 
 
 class User(object):
@@ -44,7 +43,6 @@ class User(object):
 
 
 def send_email(subject, stock_info, email_addr, recipient):
-
     sender = email_addr
 
     msg = MIMEMultipart()
@@ -70,24 +68,37 @@ def send_email(subject, stock_info, email_addr, recipient):
     s.quit()
 
 
-def pull_stock_info(Stock):
+def pull_stock_info(stock):
+    print("Pulling info for " + stock.acronym)
 
-    print("Pulling info for " + Stock.name)
-
-    yahoo = f"https://finance.yahoo.com/quote/{Stock.acronym}?p={Stock.acronym}&.tsrc=fin-srch"
-
-    # Send HTTP Request
-    page = requests.get(yahoo)
-
-    # Pull HTTP from the request
-    soup = BeautifulSoup(page.content, 'html.parser')
+    # Send HTTP request
     try:
-        data = soup.find(class_="My(6px) Pos(r) smartphone_Mt(6px)").text
-        return data
-    except AttributeError as a:
-        print(f"|----!!!!FAILED TO PULL DATA FOR {Stock.acronym}:{Stock.name}!!!!----|\n|---- Attribute Error: {a} ----|\n")
-        del Stock
-        print(f"|----CORRUPT DATA HAS BEEN DELETED----|\n")
+        yahoo = f"https://finance.yahoo.com/quote/{stock.acronym}?p={stock.acronym}&.tsrc=fin-srch"
+        page = requests.get(yahoo)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        try:  # Scrape html from the webpage
+            count = 0
+            data = soup.find(class_="My(6px) Pos(r) smartphone_Mt(6px)").text
+            if data is None:
+                while count < 4:
+                    count += 1
+                    print(colored(f"!!!!Failed to {stock.acronym} - Trying again!!!!\n"), "red")
+                    data = soup.find(class_="My(6px) Pos(r) smartphone_Mt(6px)").text
+                    if data is not None:
+                        count = 4
+            return data
+        except AttributeError:
+            print(f"|----!!!!FAILED TO PULL DATA FOR {stock.acronym} !!!!----|\n")
+            del Stock
+            print(f"|----CORRUPT DATA HAS BEEN DELETED----|\n")
+    except requests.ConnectionError as e:
+        print("Connection Error:" + str(e))
+    except requests.Timeout as e:
+        print("Timeout Error" + str(e))
+    except requests.RequestException as e:
+        print("General Error:" + str(e))
+    except KeyboardInterrupt:
+        print("Exiting the program.")
 
 
 def get_price(stock_info):
@@ -121,7 +132,6 @@ def get_price(stock_info):
 
 
 def compare_price(stock_price, low, high):
-
     current_price = float(stock_price)
 
     if current_price <= low:
@@ -133,16 +143,15 @@ def compare_price(stock_price, low, high):
 
 
 def send_alert(raw_information, stock_price, stock_name):
-
-    formatted_email = f"\n{stock_name}: \n\n Price: " + stock_price + "Raw:\n\n: " + raw_information + "\n\n"
-
-    subject_alert = f"{stock_name} HAS CHANGED"
-
-    send_email(subject_alert, formatted_email, email_address, User.email)
+    try:
+        formatted_email = f"\n{stock_name}: \n\n Price: " + stock_price + "Raw:\n\n: " + raw_information + "\n\n"
+        subject_alert = f"{stock_name} HAS CHANGED"
+        send_email(subject_alert, formatted_email, email_address, User.email)
+    except Exception as e:
+        print("We were unable to send an email to the address you provided. Error: (" + str(e))
 
 
 def search_for_alerts(stocks):
-
     count = len(stocks)
     alerts = []
     for num in range(count):
@@ -150,10 +159,10 @@ def search_for_alerts(stocks):
 
     for num in range(count):
         if alerts[num]:
-            print(f"*****{stocks[num].name} has triggered an alert*****")
+            print(f"*****{stocks[num].acronym} has triggered an alert*****")
             send_alert(stocks[num].raw, stocks[num].price, stocks[num].name)
         else:
-            print(f"No alerts were found for {stocks[num]}")
+            print(f"No alerts were found for {stocks[num].acronym}")
 
 
 def scrape(stocks):
@@ -181,72 +190,72 @@ def scrape(stocks):
     return stocks
 
 
-def main():
-    print("\nHello, welcome to Adam's stock scraper. Instructions below: \n"
-          "1. Enter your email address where you would like to receive alerts."
-          "**Important: You must allow less secure apps in your email security "
-          "settings. If this makes you uncomfortable, make a new email address for the alerts. \n"
-          "2. Enter a stock acronym followed by a nickname. \n"
+def user_input():
+    # Welcome message + application instructions
+    print("\nHello, Welcome to StockScraper. Instructions below: \n"
+          "1. Enter your email address where you would like to receive alerts.\n"
+          "**Important: The alerts will go to your spam folder, allow the email\n"
+          "address stockalertsystem7@gmail.com to send you emails.**. \n"
+          "2. Enter a stock acronym. \n"
           "3. Enter a price floor and ceiling for the stock.\n"
           "4. Press 'n' to add another stock or enter to start searching.\n\n")
-    emailAddr = raw_input('Enter your email address: ')
-    User.email = emailAddr
+
+    # Define local variables used to retrieve user input
     acronyms = []
-    nicknames = []
     floors = []
     ceilings = []
 
+    # Retrieve User Attributes
+    emailAddr = raw_input('Enter your email address: ')
+    User.email = emailAddr
+
+    # Retrieve Stock Input from User
     escape = False
-    value = True
     while not escape:
         stockIndex = len(acronyms)
-        print(f"\nStock #{stockIndex + 1}:")
+        print(f"\nAdd Stock #{stockIndex + 1}:")
         acronymInput = False
-        nicknameInput = False
         floorInput = False
         ceilingInput = False
         escapeInput = False
         while not acronymInput:
             try:
                 acronyms.append(raw_input(f'Enter Stock Acronym #{stockIndex + 1}: '))
-                if not acronyms[stockIndex] or len(acronyms[stockIndex]) > 4:
-                    raise ValueError("Please enter a valid stock acronym.")
+                if not acronyms[stockIndex]:
+                    del acronyms[stockIndex]
+                    raise ValueError("Please enter a stock acronym.", "red")
+                # if acronyms[stockIndex] not in StockDictionary.NASDAQ:
+                #     print("Please enter a NASDAQ stock.")
+                elif len(acronyms[stockIndex]) > 5:
+                    raise ValueError("Enter a valid stock acronym with less than 5 characters.", "red")
                 else:
                     acronymInput = True
-            except ValueError as e:
-                print(e)
-                del acronyms[stockIndex]
-        while not nicknameInput:
-            try:
-                nicknames.append(raw_input(f'Enter Nickname #{stockIndex + 1}: '))
-                if not nicknames[stockIndex]:
-                    raise ValueError("Please enter a Nickname.")
-                else:
-                    nicknameInput = True
-            except ValueError as e:
-                print(e)
-                del nicknames[stockIndex]
+            except ValueError as e:  # If there is an Input/Value error, we print
+                print("Error reading Stock Acronym. Try again. (Error: " + str(e) + ")", "red")
+                del acronyms[stockIndex]  # Delete corrupted index if there is an error.
         while not floorInput:
             try:
                 floor = float(raw_input(f'Enter Price Floor for {stockIndex + 1}: '))
                 floors.append(floor)
                 if not floors[stockIndex]:
                     del floors[stockIndex]
-                    raise ValueError("Please enter a Price Floor.")
+                    raise ValueError("Please enter a Price Floor.", "red")
                 elif floors[stockIndex] > 0.00001:
                     floorInput = True
             except ValueError as e:
-                print(e)
+                print("Error reading Price Floor. Enter a number greater than 0.00001. (Error: " + str(e) + ")", "red")
         while not ceilingInput:
             try:
                 ceilings.append(float(raw_input(f'Enter Price Ceiling for {stockIndex + 1}: ')))
                 if not ceilings[stockIndex]:
                     del ceilings[stockIndex]
-                    raise ValueError("Please enter a valid Price Ceiling.")
+                    raise ValueError("Please enter a Price Ceiling.", "red")
                 elif floors[stockIndex] < 10000000000000000000000000000000.00:
                     ceilingInput = True
             except ValueError as e:
-                print(e)
+                print(colored(
+                    "Error reading Price Ceiling. Please enter numbers only and do not use a dollar sign. (Error: " + str(
+                        e) + ")"), "red")
         while not escapeInput:
             try:
                 print("\nType N and press enter to start the script!")
@@ -254,22 +263,19 @@ def main():
                 if anothaOne == 'y':
                     escape = False
                     escapeInput = True
-                if anothaOne == 'n':
+                elif anothaOne == 'n':
                     escape = True
                     escapeInput = True
                 else:
-                    raise ValueError("InputError: (Y/N)")
+                    raise ValueError("InputError: (Y/N)", "red")
             except ValueError as e:
                 print(e)
 
     acronymRange = len(acronyms)
-    nicknameRange = len(nicknames)
-    floorRange = len(floors)
-    ceilingRange = len(ceilings)
 
     stockObjects = [Stock("", "", "", "", 0.0, 0.0, 0.0) for i in range(acronymRange)]
     for acronym in range(acronymRange):
-        stockObjects[acronym] = Stock("", f"{nicknames[acronym]}", f"{acronyms[acronym]}", "", 0.00, floors[acronym],
+        stockObjects[acronym] = Stock("", "", f"{acronyms[acronym]}", "", 0.00, floors[acronym],
                                       ceilings[acronym])
 
     while True:
@@ -277,19 +283,18 @@ def main():
             sys.exit(0)
         else:
             t0 = time.perf_counter()
-            stockArray = scrape(stockObjects)
-            search_for_alerts(stockArray)
-            t1 = time.perf_counter()
-            print("Completion time: ", t1 - t0)
+            try:
+                stockArray = scrape(stockObjects)
+            except Exception as e:
+                print(colored("Error. Follow the directions and try again.", "red"))
+                user_input()
+            try:
+                search_for_alerts(stockArray)
+            except Exception as e:
+                print("Error searching for alerts. (Error: " + str(e))
+        t1 = time.perf_counter()
+        print("Completion time: ", t1 - t0)
 
 
 if __name__ == '__main__':
-    main()
-
-
-
-
-
-
-
-
+    user_input()

@@ -35,3 +35,16 @@
 # phone = raw_input('Enter phone number or enter to continue without text alerts: ')
 
 # "2. Enter a phone number (optional) for text alerts or press enter to continue without. \n"
+
+
+# while not nicknameInput:
+#     try:
+#         nicknames.append(raw_input(f'Enter Nickname #{stockIndex + 1}: '))
+#         if not nicknames[stockIndex]:
+#             del nicknames[stockIndex]
+#             raise ValueError("Please enter a Nickname.", "red")
+#         else:
+#             nicknameInput = True
+#     except ValueError as e:
+#         print("Error reading Nickname. Try again. (Error: " + str(e) + ")", "red")
+#         del nicknames[stockIndex]
