@@ -22,7 +22,7 @@ class Stock(object):
 
     def __init__(self, raw, name, acronym, price, float_price, floor, ceiling):
         self.raw = raw,
-        self.name = name
+        self.name = name.upper()
         self.acronym = acronym
         self.price = price
         self.float_price = float_price
@@ -32,6 +32,7 @@ class Stock(object):
 
     def alert_count(self):
         self.count += 1
+
 
 class User(object):
 
@@ -54,13 +55,20 @@ def send_email(subject, stock_info, recipient):
     s = smtplib.SMTP('smtp.gmail.com', 587)
 
     s.starttls()
-
-    s.login(sender, password)
+    try:
+        s.login(sender, password)
+    except smtplib.SMTPServerDisconnected or smtplib.SMTPException:
+        s.quit()
+        print(colored("The StockScraper faced an error sending your message.", "red"))
+        exit(421)
 
     text = msg.as_string()
-
-    s.sendmail(sender, recipient, text)
-
+    try:
+        s.sendmail(sender, recipient, text)
+    except smtplib.SMTPSenderRefused or smtplib.SMTPNotSupportedError or smtplib.SMTPException as e:
+        s.quit()
+        print(colored("The StockScraper message was refused by your phone/email.", "red"))
+        exit(421)
     s.quit()
 
 
@@ -83,10 +91,10 @@ def pull_stock_info(stock):
                     if data is not None:
                         count = 4
             return data
-        except AttributeError:
-            print(f"|----!!!!FAILED TO PULL DATA FOR {stock.acronym} !!!!----|\n")
-            del Stock
-            print(f"|----CORRUPT DATA HAS BEEN DELETED----|\n")
+        except AttributeError or UnboundLocalError:
+            print(colored(f"\n|----!!!!FAILED TO PULL DATA FOR {stock.acronym} !!!!----|\n", "red"))
+            print(colored("Restarting the program...Please enter correct stock acronyms.", "red"))
+            user_input()
     except requests.ConnectionError as e:
         print("Connection Error:" + str(e))
     except requests.Timeout as e:
@@ -102,15 +110,15 @@ def get_price(stock_info):
     plus = '+'
     minus = '-'
     period = "."
-    count = 0
 
     # Account for different format when market is closed or open
     if 'close' in stock_info:
         info_array = stock_info.rsplit(' ', 5)
     if 'open' in stock_info:
         info_array = stock_info.rsplit(' ', 8)
-    else:
-        return None
+    # elif 'open' or 'close' not in stock_info:
+    #     print(colored("Error: Not open or closed?", "red"))
+    #     return "0.00"
 
     # Account for different format when stock is up/down
     if plus in info_array[0]:
@@ -133,26 +141,24 @@ def get_price(stock_info):
 def compare_price(stock_price, low, high):
     current_price = float(stock_price)
 
-    if current_price <= low:
+    if current_price < 0:
+        print(colored("Error comparing stock price.", "red"))
+        return False
+    elif current_price <= low:
         return True
-    if current_price >= high:
+    elif current_price >= high:
         return True
     else:
         return False
 
 
 def send_alert(stock):
-    try:
-        formatted_email = f"\n{stock.name}: \n\n Price: " + stock.price + "Raw:\n\n: " + stock.raw + "\n\n"
-        subject_alert = f"{stock.name} HAS CHANGED"
-        send_email(subject_alert, formatted_email, sender, User().email)
-    except Exception:
-        print(colored("We were unable to send an email to the address you provided. You may need to allow less\n"
-              "secure applications to access your email. Try again", "red"))
-        user_input()
+    formatted_email = f"\n{stock.name}: \n\n Price: " + stock.price + "Raw:\n\n: " + stock.raw + "\n\n"
+    subject_alert = f"{stock.name} HAS CHANGED"
+    send_email(subject_alert, formatted_email, User().email)
 
 
-def search_for_alerts(stocks):
+def search_for_alerts(stocks):  # Needs work. Maybe some exceptions?
     count = len(stocks)
     alerts = []
     for num in range(count):
@@ -166,7 +172,7 @@ def search_for_alerts(stocks):
             print(f"No alerts were found for {stocks[num].acronym}")
 
 
-def scrape(stocks):
+def scrape(stocks):  # Needs Cleaned - move outside exceptions into method?
     count = len(stocks)
     raw_stock = []
     price_stock = []
@@ -175,10 +181,11 @@ def scrape(stocks):
 
     for num in range(count):
         price = get_price(raw_stock[num])
-        if price is not None:
+        if float(price) <= 0:
+            print(colored("There was an error retrieving a stock price.", "red"))
             price_stock.append(price)
         else:
-            print(colored(f"Error getting price for {stocks[num].acronym}.", "red"))
+            price_stock.append(price)
 
     for num in range(count):
         stocks[num].raw = raw_stock[num]
@@ -216,7 +223,7 @@ def user_input():
 
     # Retrieve Stock Input from User
     escape = False
-    while not escape:
+    while not escape:  # Need to make my loops more concise
         stockIndex = len(acronyms)
         print(f"\nAdd Stock #{stockIndex + 1}:")
         acronymInput = False
@@ -288,21 +295,15 @@ def user_input():
             sys.exit(0)
         else:
             t0 = time.perf_counter()
-            try:
-                stockArray = scrape(stockObjects)
-                for stock in stockArray:
-                    if stock.price is None:
-                        print(f"There was an error pulling the price for {stock.acronym}")
-                        del stock
-            except Exception or AttributeError as e:
-                print(colored("Error. Follow the directions and try again.", "red"))
-                # user_input()
-            try:
-                search_for_alerts(stockArray)
-            except Exception as e:
-                print("Error searching for alerts. (Error: " + str(e))
-        t1 = time.perf_counter()
-        print("Completion time: ", t1 - t0)
+            # try:
+            stockArray = scrape(stockObjects)
+            for stock in stockArray:
+                if stock.price is None:
+                    print(f"There was an error pulling the price for {stock.acronym}")
+                    del stock
+            search_for_alerts(stockArray)
+            t1 = time.perf_counter()
+            print("Completion time: ", t1 - t0)
 
 
 if __name__ == '__main__':
