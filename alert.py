@@ -12,7 +12,7 @@ import sys
 from dictionary import StockDictionary
 
 # email variables
-email_address = "stockalertsystem7@gmail.com"
+sender = "stockalertsystem7@gmail.com"
 adam_number = "5712911193@txt.att.net"
 password = "Alert12345!"
 phone_number = 5712911193
@@ -28,9 +28,10 @@ class Stock(object):
         self.float_price = float_price
         self.floor = floor
         self.ceiling = ceiling
-        self.stock = [self.raw, self.name, self.acronym, self.price, self.float_price, self.floor, self.ceiling]
-    # def add_stock(self, Stock):
+        self.count = 0
 
+    def alert_count(self):
+        self.count += 1
 
 class User(object):
 
@@ -38,8 +39,7 @@ class User(object):
         self.email = email
 
 
-def send_email(subject, stock_info, email_addr, recipient):
-    sender = email_addr
+def send_email(subject, stock_info, recipient):
 
     msg = MIMEMultipart()
 
@@ -78,7 +78,7 @@ def pull_stock_info(stock):
             if data is None:
                 while count < 4:
                     count += 1
-                    print(colored(f"!!!!Failed to {stock.acronym} - Trying again!!!!\n"), "red")
+                    print(colored(f"!!!!Failed to pull {stock.acronym} - Trying again!!!!\n"), "red")
                     data = soup.find(class_="My(6px) Pos(r) smartphone_Mt(6px)").text
                     if data is not None:
                         count = 4
@@ -102,12 +102,15 @@ def get_price(stock_info):
     plus = '+'
     minus = '-'
     period = "."
+    count = 0
 
     # Account for different format when market is closed or open
     if 'close' in stock_info:
         info_array = stock_info.rsplit(' ', 5)
     if 'open' in stock_info:
         info_array = stock_info.rsplit(' ', 8)
+    else:
+        return None
 
     # Account for different format when stock is up/down
     if plus in info_array[0]:
@@ -138,11 +141,11 @@ def compare_price(stock_price, low, high):
         return False
 
 
-def send_alert(raw_information, stock_price, stock_name):
+def send_alert(stock):
     try:
-        formatted_email = f"\n{stock_name}: \n\n Price: " + stock_price + "Raw:\n\n: " + raw_information + "\n\n"
-        subject_alert = f"{stock_name} HAS CHANGED"
-        send_email(subject_alert, formatted_email, email_address, User.email)
+        formatted_email = f"\n{stock.name}: \n\n Price: " + stock.price + "Raw:\n\n: " + stock.raw + "\n\n"
+        subject_alert = f"{stock.name} HAS CHANGED"
+        send_email(subject_alert, formatted_email, sender, User().email)
     except Exception:
         print(colored("We were unable to send an email to the address you provided. You may need to allow less\n"
               "secure applications to access your email. Try again", "red"))
@@ -158,7 +161,7 @@ def search_for_alerts(stocks):
     for num in range(count):
         if alerts[num]:
             print(f"*****{stocks[num].acronym} has triggered an alert*****")
-            send_alert(stocks[num].raw, stocks[num].price, stocks[num].name)
+            send_alert(stocks[num])
         else:
             print(f"No alerts were found for {stocks[num].acronym}")
 
@@ -171,7 +174,11 @@ def scrape(stocks):
         raw_stock.append(pull_stock_info(stocks[num]))
 
     for num in range(count):
-        price_stock.append(get_price(raw_stock[num]))
+        price = get_price(raw_stock[num])
+        if price is not None:
+            price_stock.append(price)
+        else:
+            print(colored(f"Error getting price for {stocks[num].acronym}.", "red"))
 
     for num in range(count):
         stocks[num].raw = raw_stock[num]
@@ -222,8 +229,8 @@ def user_input():
                 if not acronyms[stockIndex]:
                     del acronyms[stockIndex]
                     raise ValueError("Please enter a stock acronym.", "red")
-                if acronyms[stockIndex] not in StockDictionary.NASDAQ or StockDictionary.COLE:
-                    print("Please enter a NASDAQ or COLE stock.")
+                elif acronyms[stockIndex] in StockDictionary().NASDAQ:
+                    raise ValueError("Please enter a NASDAQ or COLE stock.")
                 elif len(acronyms[stockIndex]) > 5:
                     raise ValueError("Enter a valid stock acronym with less than 5 characters.", "red")
                 else:
@@ -283,9 +290,13 @@ def user_input():
             t0 = time.perf_counter()
             try:
                 stockArray = scrape(stockObjects)
-            except Exception as e:
+                for stock in stockArray:
+                    if stock.price is None:
+                        print(f"There was an error pulling the price for {stock.acronym}")
+                        del stock
+            except Exception or AttributeError as e:
                 print(colored("Error. Follow the directions and try again.", "red"))
-                user_input()
+                # user_input()
             try:
                 search_for_alerts(stockArray)
             except Exception as e:
@@ -296,3 +307,5 @@ def user_input():
 
 if __name__ == '__main__':
     user_input()
+
+    # get_price(stock_info="70.35-0.22(-0.31%)At 4:00 pm EST")
