@@ -213,7 +213,7 @@ def scrape(stocks):  # Needs Cleaned - move outside exceptions into method?
 def user_input():
     # Welcome message + application instructions
     print("\nHello, Welcome to StockScraper. Instructions below: \n"
-          "1. Enter your email address where you would like to receive alerts.\n"
+          "1. Enter your email address & (optional) phone number where you would like to receive alerts.\n"
           "**Important: The alerts will go to your spam folder, allow the email\n"
           "address stockalertsystem7@gmail.com to send you emails.**. \n"
           "2. Enter a stock acronym. \n"
