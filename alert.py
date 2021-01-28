@@ -10,13 +10,13 @@ from bs4 import BeautifulSoup
 from pip._vendor.distlib.compat import raw_input
 import sys
 from dictionary import StockDictionary
+import text
 
 # email variables
 sender = "stockalertsystem7@gmail.com"
 adam_number = "5712911193@txt.att.net"
 password = "Alert12345!"
 phone_number = 5712911193
-
 
 class Stock(object):
 
@@ -33,12 +33,15 @@ class Stock(object):
     def alert_count(self):
         self.count += 1
 
+    def reset_count(self):
+
+
 
 class User(object):
 
-    def __int__(self, email):
+    def __int__(self, email, phone=None):
         self.email = email
-
+        self.phone = phone
 
 def send_email(subject, stock_info, recipient):
 
@@ -153,9 +156,14 @@ def compare_price(stock_price, low, high):
 
 
 def send_alert(stock):
-    formatted_email = f"\n{stock.name}: \n\n Price: " + stock.price + "Raw:\n\n: " + stock.raw + "\n\n"
+    formatted_email = f"\n{stock.acronym}: Price: " + stock.price + "!!!!Raw:\n\n: " + stock.raw + "\n\n"
+    formatted_text = f"{stock.acronym} PRICE {stock.price}"
     subject_alert = f"{stock.name} HAS CHANGED"
-    send_email(subject_alert, formatted_email, User().email)
+    # send_email(subject_alert, formatted_email, )
+    if User().phone is not None and stock.count < 1:
+        stock.count += 1
+        text.send_text(formatted_text, User().phone)
+
 
 
 def search_for_alerts(stocks):  # Needs work. Maybe some exceptions?
@@ -218,9 +226,10 @@ def user_input():
     ceilings = []
 
     # Retrieve User Attributes
-    emailAddr = raw_input('Enter your email address: ')
-    User.email = emailAddr
-
+    # emailAddr = raw_input('Enter your email address: ')
+    # User.email = emailAddr
+    phoneAddr = input('Enter your phone number: ')
+    User.phone = phoneAddr
     # Retrieve Stock Input from User
     escape = False
     while not escape:  # Need to make my loops more concise
