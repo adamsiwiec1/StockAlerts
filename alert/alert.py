@@ -1,21 +1,13 @@
-import argparse # For cli app?
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from termcolor import colored
-import time
-import keyboard as keyboard
-from pip._vendor.distlib.compat import raw_input
-import sys
-from timer.timer import Timer
-from dictionary import StockDictionary
 import text
 from flask import Flask, request
-from twilio.twiml.messaging_response import Body, Message, Redirect, MessagingResponse
+from twilio.twiml.messaging_response import Body
 from twilio import twiml
 
 # Imported classes
-from stock import Stock
 
 app = Flask(__name__)
 

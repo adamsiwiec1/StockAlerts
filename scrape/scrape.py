@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from termcolor import colored
-from main import user_input
+from alert.alert import user_input
 
 
 def scrape(stocks):  # Needs Cleaned - move outside exceptions into method?
