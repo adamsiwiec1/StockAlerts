@@ -32,3 +32,5 @@ venv\Scripts\activate
 
 Start ngrok:
 ngrok http 5000
+
+4. Set up your Ngrok redirct in Twilio or whatever you api you are using.

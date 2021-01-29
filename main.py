@@ -1,27 +1,25 @@
 import sys
 import time
-import keyboard
 from flask import Flask
 from pip._vendor.distlib.compat import raw_input
-import alert.alert as alert
+from alerts import alert
 from termcolor import colored
-
 import scrape
-from stock.dictionary import StockDictionary
-from stock.stock import Stock
-
-app = Flask(__name__)
+from stocks.dictionary import StockDictionary
+from stocks.stock import Stock
 
 
 def user_input():
     # Welcome message + application instructions
     print("\nHello, Welcome to StockScraper. Instructions below: \n"
-          "1. Enter your email address & (optional) phone number where you would like to receive alerts.\n"
-          "**Important: The alerts will go to your spam folder, allow the email\n"
-          "address stockalertsystem7@gmail.com to send you emails.**. \n"
-          "2. Enter a stock acronym. \n"
-          "3. Enter a price floor and ceiling for the stock.\n"
-          "4. Press 'n' to add another stock or enter to start searching.\n\n")
+          # "1. Enter your email address & (optional) phone number where you would like to receive alerts.\n"
+          # "**Important: The alerts will go to your spam folder, allow the email\n"
+          # "address stockalertsystem7@gmail.com to send you emails.**. \n"
+          "1. Enter your phone number.\n"
+          "2. Enter a stocks acronym. \n"
+          "3. Enter a price floor and ceiling for the stocks.\n"
+          "4. Press 'n' to add another stocks or enter to start searching.\n"
+          "**Reply 'STOP' at any time to end the script**\n\n")
 
     # Define local variables used to retrieve user input
     acronyms = []
@@ -47,11 +45,11 @@ def user_input():
                 acronyms.append(raw_input(f'Enter Stock Acronym #{stockIndex + 1}: '))
                 if not acronyms[stockIndex]:
                     del acronyms[stockIndex]
-                    raise ValueError("Please enter a stock acronym.", "red")
+                    raise ValueError("Please enter a stocks acronym.", "red")
                 elif acronyms[stockIndex] in StockDictionary().NASDAQ:
-                    raise ValueError("Please enter a NASDAQ or COLE stock.")
+                    raise ValueError("Please enter a NASDAQ or COLE stocks.")
                 elif len(acronyms[stockIndex]) > 5:
-                    raise ValueError("Enter a valid stock acronym with less than 5 characters.", "red")
+                    raise ValueError("Enter a valid stocks acronym with less than 5 characters.", "red")
                 else:
                     acronymInput = True
             except ValueError as e:  # If there is an Input/Value error, we print
@@ -81,7 +79,7 @@ def user_input():
         while not escapeInput:
             try:
                 print("\nType N and press enter to start the script!")
-                anothaOne = input("\n\nWould you like to add another stock? Y/N:").lower()
+                anothaOne = input("\n\nWould you like to add another stocks? Y/N:").lower()
                 if anothaOne == 'y':
                     escape = False
                     escapeInput = True
@@ -101,9 +99,6 @@ def user_input():
                                       ceilings[acronym])
 
     while True:
-        if keyboard.is_pressed("ENTER"):
-            sys.exit(0)
-        else:
             t0 = time.perf_counter()
             # try:
             stockArray = scrape.scrape(stockObjects)
@@ -118,4 +113,4 @@ def user_input():
 
 if __name__ == '__main__':
     user_input()
-    app.run()
+

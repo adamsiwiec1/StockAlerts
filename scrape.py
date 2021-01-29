@@ -14,7 +14,7 @@ def scrape(stocks):  # Needs Cleaned - move outside exceptions into method?
     for num in range(count):
         price = get_price(raw_stock[num])
         if float(price) <= 0:
-            print(colored("There was an error retrieving a stock price.", "red"))
+            print(colored("There was an error retrieving a stocks price.", "red"))
             price_stock.append(price)
         else:
             price_stock.append(price)
@@ -55,7 +55,7 @@ def pull_stock_info(stock):
             return data
         except AttributeError or UnboundLocalError:
             print(colored(f"\n|----!!!!FAILED TO PULL DATA FOR {stock.acronym} !!!!----|\n", "red"))
-            print(colored("Restarting the program...Please enter correct stock acronyms.", "red"))
+            print(colored("Restarting the program...Please enter correct stocks acronyms.", "red"))
             main.user_input()
     except requests.ConnectionError as e:
         print("Connection Error:" + str(e))
@@ -82,7 +82,7 @@ def get_price(stock_info):
     #     print(colored("Error: Not open or closed?", "red"))
     #     return "0.00"
 
-    # Account for different format when stock is up/down
+    # Account for different format when stocks is up/down
     if plus in info_array[0]:
         price = info_array[0].split('+')[0]
     elif minus in info_array[0]:
