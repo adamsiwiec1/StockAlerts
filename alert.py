@@ -9,14 +9,21 @@ import requests
 from bs4 import BeautifulSoup
 from pip._vendor.distlib.compat import raw_input
 import sys
+from timer.timer import Timer
 from dictionary import StockDictionary
 import text
+from flask import Flask, request
+from twilio.twiml.messaging_response import Body, Message, Redirect, MessagingResponse
+from twilio import twiml
+
+app = Flask(__name__)
 
 # email variables
 sender = "stockalertsystem7@gmail.com"
 adam_number = "5712911193@txt.att.net"
 password = "Alert12345!"
 phone_number = 5712911193
+
 
 class Stock(object):
 
@@ -29,12 +36,19 @@ class Stock(object):
         self.floor = floor
         self.ceiling = ceiling
         self.count = 0
+        self.timer = None
 
     def alert_count(self):
         self.count += 1
 
-    def reset_count(self):
+    def start_timer(self):
+        self.timer = float(time.perf_counter())
 
+    def reset_timer(self):
+        self.timer = time.perf_counter()
+
+    def reset_count(self):
+        self.count = 0
 
 
 class User(object):
@@ -42,6 +56,7 @@ class User(object):
     def __int__(self, email, phone=None):
         self.email = email
         self.phone = phone
+
 
 def send_email(subject, stock_info, recipient):
 
@@ -160,10 +175,29 @@ def send_alert(stock):
     formatted_text = f"{stock.acronym} PRICE {stock.price}"
     subject_alert = f"{stock.name} HAS CHANGED"
     # send_email(subject_alert, formatted_email, )
-    if User().phone is not None and stock.count < 1:
+    if User().phone is not None:
         stock.count += 1
-        text.send_text(formatted_text, User().phone)
+        if stock.count <= 1:
+            # stock.start_timer()
+            text.send_text(formatted_text, User().phone)
+        elif stock.count > 20:
+            stock.reset_count()
+            # stock.reset_timer()
+        # elif stock.timer >= 30.00 and not None:
+        #     text.send_text(formatted_text, User().phone)
 
+
+@app.route('/sms', methods=['POST'])
+def sms():
+    number = request.form['From']
+    message_body = request.form['Body']
+
+    print(number)
+    print(message_body)
+
+    resp = twiml.messaging_response.MessagingResponse()
+    resp.message('Text /price followed by a stock acronym to see details.'.format(number, message_body))
+    return str(resp)
 
 
 def search_for_alerts(stocks):  # Needs work. Maybe some exceptions?
@@ -317,5 +351,5 @@ def user_input():
 
 if __name__ == '__main__':
     user_input()
-
+    app.run()
     # get_price(stock_info="70.35-0.22(-0.31%)At 4:00 pm EST")
