@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from termcolor import colored
-from alert.alert import user_input
+import main as main
 
 
 def scrape(stocks):  # Needs Cleaned - move outside exceptions into method?
@@ -56,7 +56,7 @@ def pull_stock_info(stock):
         except AttributeError or UnboundLocalError:
             print(colored(f"\n|----!!!!FAILED TO PULL DATA FOR {stock.acronym} !!!!----|\n", "red"))
             print(colored("Restarting the program...Please enter correct stock acronyms.", "red"))
-            user_input()
+            main.user_input()
     except requests.ConnectionError as e:
         print("Connection Error:" + str(e))
     except requests.Timeout as e:

@@ -1,5 +1,16 @@
+import sys
+import time
+import keyboard
+from flask import Flask
 from pip._vendor.distlib.compat import raw_input
-from alert import User
+import alert.alert as alert
+from termcolor import colored
+
+import scrape
+from stock.dictionary import StockDictionary
+from stock.stock import Stock
+
+app = Flask(__name__)
 
 
 def user_input():
@@ -21,7 +32,7 @@ def user_input():
     # emailAddr = raw_input('Enter your email address: ')
     # User.email = emailAddr
     phoneAddr = input('Enter your phone number: ')
-    User.phone = phoneAddr
+    alert.User.phone = phoneAddr
     # Retrieve Stock Input from User
     escape = False
     while not escape:  # Need to make my loops more concise
@@ -56,7 +67,7 @@ def user_input():
                 elif floors[stockIndex] > 0.00001:
                     floorInput = True
             except ValueError as e:
-                print("Error reading Price Floor. Enter a number greater than 0.00001. (Error: " + str(e) + ")", "red")
+                print(colored("Error reading Price Floor. Enter a number greater than 0.00001.", "red"))
         while not ceilingInput:
             try:
                 ceilings.append(float(raw_input(f'Enter Price Ceiling for {stockIndex + 1}: ')))
@@ -66,9 +77,7 @@ def user_input():
                 elif floors[stockIndex] < 10000000000000000000000000000000.00:
                     ceilingInput = True
             except ValueError as e:
-                print(colored(
-                    "Error reading Price Ceiling. Please enter numbers only and do not use a dollar sign. (Error: " + str(
-                        e) + ")"), "red")
+                print(colored("Error reading Price Ceiling. Please enter numbers only and do not use a dollar sign.)", "red"))
         while not escapeInput:
             try:
                 print("\nType N and press enter to start the script!")
@@ -97,12 +106,12 @@ def user_input():
         else:
             t0 = time.perf_counter()
             # try:
-            stockArray = scrape(stockObjects)
+            stockArray = scrape.scrape(stockObjects)
             for stock in stockArray:
                 if stock.price is None:
                     print(f"There was an error pulling the price for {stock.acronym}")
                     del stock
-            search_for_alerts(stockArray)
+            alert.search_for_alerts(stockArray)
             t1 = time.perf_counter()
             print("Completion time: ", t1 - t0)
 

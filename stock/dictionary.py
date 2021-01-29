@@ -1,8 +1,4 @@
-
-
-
 class StockDictionary:
-
 
     COLE = ["CLWD","CHUC","TLSS","PLYZ"]
 

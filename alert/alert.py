@@ -1,21 +1,32 @@
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
+import twilio
 from termcolor import colored
-import text
 from flask import Flask, request
+from twilio.base.exceptions import TwilioRestException
 from twilio.twiml.messaging_response import Body
 from twilio import twiml
-
-# Imported classes
-
-app = Flask(__name__)
+from twilio.rest import Client
 
 # email variables
+import config # this import is not working bcuz ide is confused so I'm moving these here temporarily
+from main import user_input
+
+ACCOUNT_SID = "AC0af86607a4917590b19069d8f0e9d1d7"
+AUTH_TOKEN = '06b6ab68597feeb55244cb6d5647d499'
+
 sender = "stockalertsystem7@gmail.com"
 adam_number = "5712911193@txt.att.net"
 password = "Alert12345!"
 phone_number = 5712911193
+
+# sms variables
+app = Flask(__name__)
+account_sid = ACCOUNT_SID
+auth_token = AUTH_TOKEN
+client = Client(account_sid, auth_token)
 
 
 class User(object):
@@ -57,6 +68,33 @@ def send_email(subject, stock_info, recipient):
     s.quit()
 
 
+def send_text(info, recipient):
+    try:
+        message = client.messages.create(
+                              body=f'{info}',
+                              from_='+13042440704',
+                              to=f'+1{recipient}'
+                          )
+        print(message.sid, message.status, message.body)
+    except TwilioRestException:
+        print(colored("The user has stopped the script or blocked the number. Please try again.", "red"))
+        user_input()
+
+
+# Text reply
+@app.route('/sms', methods=['POST'])
+def sms():
+    number = request.form['From']
+    message_body = request.form['Body']
+
+    print(number)
+    print(message_body)
+
+    resp = twiml.messaging_response.MessagingResponse()
+    resp.message('Text /price followed by a stock acronym to see details.'.format(number, message_body))
+    return str(resp)
+
+
 def compare_price(stock_price, low, high):
     current_price = float(stock_price)
 
@@ -80,25 +118,12 @@ def send_alert(stock):
         stock.count += 1
         if stock.count <= 1:
             # stock.start_timer()
-            text.send_text(formatted_text, User().phone)
+            send_text(formatted_text, User().phone)
         elif stock.count > 20:
             stock.reset_count()
             # stock.reset_timer()
         # elif stock.timer >= 30.00 and not None:
         #     text.send_text(formatted_text, User().phone)
-
-
-@app.route('/sms', methods=['POST'])
-def sms():
-    number = request.form['From']
-    message_body = request.form['Body']
-
-    print(number)
-    print(message_body)
-
-    resp = twiml.messaging_response.MessagingResponse()
-    resp.message('Text /price followed by a stock acronym to see details.'.format(number, message_body))
-    return str(resp)
 
 
 def search_for_alerts(stocks):  # Needs work. Maybe some exceptions?
