@@ -1,21 +1,17 @@
-import sys
 import time
-from flask import Flask
 from pip._vendor.distlib.compat import raw_input
-from alerts import alert
+from program import alert, scrape
 from termcolor import colored
-import scrape
-from stocks.dictionary import StockDictionary
-from stocks.stock import Stock
-
+from program.dictionary import StockDictionary
+from program.stock import Stock
+from program import alert
 
 def user_input():
     # Welcome message + application instructions
     print("\nHello, Welcome to StockScraper. Instructions below: \n"
-          # "1. Enter your email address & (optional) phone number where you would like to receive alerts.\n"
-          # "**Important: The alerts will go to your spam folder, allow the email\n"
-          # "address stockalertsystem7@gmail.com to send you emails.**. \n"
-          "1. Enter your phone number.\n"
+          "1. Enter the email address where you would like to receive alerts.\n"
+          "**Important: The alerts will go to your spam folder, allow the email\n"
+          "address stockalertsystem7@gmail.com to send you emails.**. \n"
           "2. Enter a stocks acronym. \n"
           "3. Enter a price floor and ceiling for the stocks.\n"
           "4. Press 'n' to add another stocks or enter to start searching.\n"
@@ -27,10 +23,10 @@ def user_input():
     ceilings = []
 
     # Retrieve User Attributes
-    # emailAddr = raw_input('Enter your email address: ')
-    # User.email = emailAddr
-    phoneAddr = input('Enter your phone number: ')
-    alert.User.phone = phoneAddr
+    emailAddr = raw_input('Enter your email address: ')
+    # No parenthesis to set?
+    alert.User.email = emailAddr
+
     # Retrieve Stock Input from User
     escape = False
     while not escape:  # Need to make my loops more concise

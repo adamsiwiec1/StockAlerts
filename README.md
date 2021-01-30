@@ -1,5 +1,6 @@
 # StockAlerts
-Sends email or text message alerts when stock prices fluctuate above/below the user's specified ceiling/floor.
+
+Sends email alerts when stock prices fluctuate above/below the user's specified ceiling/floor.
 
 **In Process of Implementing Sentinel Doubly Linked List in StockAlertsLinkedList branch**
 
